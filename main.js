@@ -115,7 +115,7 @@ function create_bundle(rawText) {
         .attr("d", function(d, i) { return line(splines[i]); });
 
     svg.selectAll("g.node")
-        .data(nodes.filter(function(n) { return !n.children; }))
+        .data(nodes.filter(function(n) { return !n.children; }), function(d) { return d.key})
         .enter().append("svg:g")
         .attr("class", "node")
         .attr("id", function(d) { return "node-" + d.key; })
@@ -428,67 +428,52 @@ function create_bundle(rawText) {
             });
 
     }
-    /**
-     *
-     * @param clusterDefinition {}
-     *
-     * keys are the key of the cluster
-     * values are array that correspond to node keys
-     *
-     */
-    function assignCluster(clusterDefinition, graph) {
+}
 
-        var keys = Object.keys(clusterDefinition);
-        var tempNodes = [];
-        var nodesMap = graph.nodeMap;
-        var root = nodesMap[""];
-        root.children = [];
-        keys.forEach(function(clusterKey){
+/**
+ *
+ * @param clusterDefinition {}
+ *
+ * keys are the key of the cluster
+ * values are array that correspond to node keys
+ *
+ */
+function assignCluster(clusterDefinition, oldCluster, graph) {
 
-            var nodesArray = clusterDefinition[clusterKey];
-            var clusterNode;
+    var nodesMap = clusterDefinition.tree;
+    var root = nodesMap[""];
+    var rootNodes = root.children;
 
-            // if a cluster node already exist, we take it into account, but reset its children
-            if   (nodesMap[clusterKey]) {
-                clusterNode = nodesMap[clusterKey];
-                clusterNode.children = [];
-                clusterNode.oldX = clusterNode.x;
-                clusterNode.oldY = clusterNode.y;
-            } else
-            {
-                clusterNode = {
-                    key: clusterKey,
-                    name: clusterKey,
-                    children: [],
-                    parent: root,
-                    clusterName: clusterKey
-                };
+    // recursively copy x and y propery from the old cluster
+    rootNodes.forEach(copyAndGoThruChildren);
+    function copyAndGoThruChildren(node) {
+
+        var newNode;
+        var nodeKey = node.key;
+        if   (nodesMap[nodeKey]) {
+            newNode = nodesMap[nodeKey];
+            var oldNode =  oldCluster.tree[nodeKey];
+            if (oldNode) {
+                newNode.oldX = oldNode.x;
+                newNode.oldY = oldNode.y;
             }
-            root.children.push(clusterNode);
-            nodesMap[clusterKey] = clusterNode;
-            tempNodes.push(clusterNode);
-            nodesArray.forEach(function(node){
-                if (!node.clusterKey) {
-                    node = nodesMap[node];
-                }
-                node.oldX = node.x;
-                node.parent = clusterNode;
-                node.clusterKey = clusterKey;
-                tempNodes.push(node);
-                clusterNode.children.push(node);
-            });
-            // for legend, we can map the names of the cluster with an ordinal scale, iterates over it
-            // and we are done with the legend part
-        });
-        graph.nodes = tempNodes;
-        // A   => ROOT
-        // 1  2  3 => CLUSTERS
-        // . . . . . . . . . => NODES
-        // once this is done, we use a pass thru the cluster and bundle layout
-        // bundle layout is ok for transition
-        // cluster layout.. i do not think so
+        } else
+        {
+            // it could happen that an new node come (in case of intermediate level)
+            console.log(nodeKey);
+            newNode = nodesMap[nodeKey];
+            newNode.clusterName = nodeKey;
+
+        }
+        if (newNode.children && newNode.children.length > 0) {
+            console.log('SHOULD GO DEEP', newNode.children);
+            newNode.children.forEach(copyAndGoThruChildren);
+        }
     }
 }
+
+
+
 
 var playing = false;
 var frameskip = 1;
@@ -678,30 +663,29 @@ function getTreeNames(){
   return ret;
 }
 
-
 function setTree(treeIdx){
+
+    debugger;
+    var oldTreeIdx = selectedTree;
     selectedTree = treeIdx;
+    assignCluster(graph.trees[selectedTree], graph.trees[oldTreeIdx], graph);
 
-    nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
-    links = graph.trees[selectedTree].frames;
-    splines = bundle(links[curFrame]);
+  nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
+  links = graph.trees[selectedTree].frames;
 
-    var path = svg.selectAll("path.link")
-        .data(links[curFrame], function(d,i){
-                return "source-" + d.source.key + "target-" + d.target.key;
-                })
-    .transition()
-        .attr("d", function(d, i) { return line(splines[i]); });
-
-    svg.selectAll("g.node")
-        .data(nodes.filter(function(n) { return !n.children; }))
-        .transition()
-        .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-        .select("text")
-        .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
-        .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-        .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; });
-
+  svg.selectAll("g.node")
+    .data(nodes.filter(function(n) { return !n.children; }), function(d) { return d.key})
+    .transition().duration(500)
+    //.attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+      .attrTween("transform", function(d) {
+          var oldMatrix = "rotate(" + (d.oldX - 90) + ")translate(" + d.y + ")";
+          var newMatrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
+          return d3.interpolateString(oldMatrix, newMatrix);
+      })
+    .select("text")
+    .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+    .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+    .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
 
     var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
     var arc = d3.svg.arc()
@@ -712,13 +696,105 @@ function setTree(treeIdx){
 
     svg.selectAll("g.trackElement")
         .select("path")
-        .transition()
-        .attr("transform", function(d) { 
-            var x = graph.trees[selectedTree].tree[d.nodeName].x;
-                return "rotate("+x+")" ; 
-            })
+        .transition().duration(500)
+        .attrTween("transform", function(d) {
+            var node = graph.trees[selectedTree].tree[d.nodeName];
+            var oldMatrix = "rotate(" + (node.oldX) + ")";
+            var newMatrix = "rotate(" + (node.x) + ")";
+            return d3.interpolateString(oldMatrix, newMatrix);
+        })
         .style("fill", function(d){ return d.color; })
         .attr("d", arc);
+
+
+    // transition the splines
+    var newSplines = bundle(graph.trees[selectedTree].frames[curFrame]);
+
+    var done = false;
+    var path = svg.selectAll("path.link")
+    path.transition().attrTween("d",
+        function(d, i, a) {
+
+            //if (i != 2) return;
+            // make a copy of the targeted Spline, and put all x to the value of OldX..
+            var oldSpline = [];
+            if (!splines[i]) {
+                console.log('TOO BAD');
+                return;
+            }
+            for (var j = 0; j < splines[i].length; j++) {
+                var s = Object.assign({}, splines[i][j]);
+
+                // when we get back to old cluster, splines array is not updated
+                // as we got NEW nodes in the graph array, so the x coordinate
+                // is really the old coordinate in that case
+                if (s.oldX && !originalCluster) { s.x = s.oldX; }
+                oldSpline.push(s);
+            }
+            oldSpline = oldSpline.map(function(s) {
+                return {x: s.x, y: s.y};
+            });
+            var simpleSpline = newSplines[i].map(function(s) { return {x: s.x, y:s.y}});
+            // now if oldspine is missing controlpoints
+
+
+            var delta = simpleSpline.length - oldSpline.length;
+
+            // old spline has less target point ( 3 < 5)
+            if (oldSpline.length < simpleSpline.length) {
+
+                if (delta !=2 ) return;
+
+                var pathToTop = Math.floor(simpleSpline.length / 2);
+                // for 1 => 0 then add index 1(CP) 2(center) 3 (CP) (should not happen)
+                // for 3 => 1 then add index 1(CP) and 3(CP)
+
+                var recomposedOldSpline = [];
+                recomposedOldSpline[0] = oldSpline[0];
+                if (delta == 2) {
+                    recomposedOldSpline[1] = oldSpline[0];
+                    recomposedOldSpline[2] = oldSpline[1];
+                    recomposedOldSpline[3] = oldSpline[2];
+                    recomposedOldSpline[4] = oldSpline[2];
+                }  else {
+                    recomposedOldSpline = oldSpline;
+                }
+
+            } else if (delta == -2) { // (5 < 3)
+                // newer spline has less target point than older spline
+                var recomposedNewSpline = [];
+                recomposedNewSpline[0] = simpleSpline[0];
+                recomposedNewSpline[1] = simpleSpline[0];
+                recomposedNewSpline[2] = simpleSpline[1];
+                recomposedNewSpline[3] = simpleSpline[2];
+                recomposedNewSpline[4] = simpleSpline[2];
+                simpleSpline = recomposedNewSpline;
+                recomposedOldSpline = oldSpline;
+
+            } else
+            {
+                recomposedOldSpline = oldSpline;
+            }
+            var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
+
+            // we can update the spline as we are done
+            setTimeout(function(){
+                if (!done){
+                    done = true;
+                    splines = newSplines;
+                    // we do not want to rebind data here
+                }
+
+            },800);
+
+            return function(t) {
+
+                return line(interpolate(t))
+            };
+            //return d3.interpolateString(a, line(splines[i]));
+            //return line(splines[i]);
+        })
+        .duration(500);
 
 }
 
