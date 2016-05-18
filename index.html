@@ -66,24 +66,17 @@ path.arc {
     </section>
 
     <section class="main-content">
-    <div style="position:absolute;bottom:0;font-size:18px;">tension: <input style="position:relative;top:3px;" type="range" min="0" max="100" value="85"></div>
-    <script type="text/javascript" src="d3/d3.js"></script>
-    <script type="text/javascript" src="d3/d3.layout.js"></script>
-    <script type="text/javascript" src="packages.js"></script>
-    <script type="text/javascript">
+      <script src="http://d3js.org/d3.v3.min.js"></script>
+<script>
 
-var w = 1280,
-    h = 800,
-    rx = w / 2,
-    ry = h / 2,
-    m0,
-    rotate = 0;
-
-var splines = [];
+var diameter = 960,
+    radius = diameter / 2,
+    innerRadius = radius - 120;
 
 var cluster = d3.layout.cluster()
-    .size([360, ry - 120])
-    .sort(function(a, b) { return d3.ascending(a.key, b.key); });
+    .size([360, innerRadius])
+    .sort(null)
+    .value(function(d) { return d.size; });
 
 var bundle = d3.layout.bundle();
 
@@ -93,153 +86,115 @@ var line = d3.svg.line.radial()
     .radius(function(d) { return d.y; })
     .angle(function(d) { return d.x / 180 * Math.PI; });
 
-// Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
-var div = d3.select("body").insert("div", "h2")
-    .style("top", "-80px")
-    .style("left", "-160px")
-    .style("width", w + "px")
-    .style("height", w + "px")
-    .style("position", "absolute")
-    .style("-webkit-backface-visibility", "hidden");
+var svg = d3.select("body").append("svg")
+    .attr("width", diameter)
+    .attr("height", diameter)
+  .append("g")
+    .attr("transform", "translate(" + radius + "," + radius + ")");
 
-var svg = div.append("svg:svg")
-    .attr("width", w)
-    .attr("height", w)
-  .append("svg:g")
-    .attr("transform", "translate(" + rx + "," + ry + ")");
+var link = svg.append("g").selectAll(".link"),
+    node = svg.append("g").selectAll(".node");
 
-svg.append("svg:path")
-    .attr("class", "arc")
-    .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
-    .on("mousedown", mousedown);
+d3.json("readme-flare-imports.json", function(error, classes) {
+  if (error) throw error;
 
-d3.json("flare-imports.json", function(classes) {
-  var nodes = cluster.nodes(packages.root(classes)),
-      links = packages.imports(nodes),
-      splines = bundle(links);
+  var nodes = cluster.nodes(packageHierarchy(classes)),
+      links = packageImports(nodes);
 
-  var path = svg.selectAll("path.link")
-      .data(links)
-    .enter().append("svg:path")
-      .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
-      .attr("d", function(d, i) { return line(splines[i]); });
+  link = link
+      .data(bundle(links))
+    .enter().append("path")
+      .each(function(d) { d.source = d[0], d.target = d[d.length - 1]; })
+      .attr("class", "link")
+      .attr("d", line);
 
-  svg.selectAll("g.node")
+  node = node
       .data(nodes.filter(function(n) { return !n.children; }))
-    .enter().append("svg:g")
+    .enter().append("text")
       .attr("class", "node")
-      .attr("id", function(d) { return "node-" + d.key; })
-      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-    .append("svg:text")
-      .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
       .attr("dy", ".31em")
-      .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-      .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + (d.y + 8) + ",0)" + (d.x < 180 ? "" : "rotate(180)"); })
+      .style("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
       .text(function(d) { return d.key; })
-      .on("mouseover", mouseover)
-      .on("mouseout", mouseout);
-
-  d3.select("input[type=range]").on("change", function() {
-    line.tension(this.value / 100);
-    path.attr("d", function(d, i) { return line(splines[i]); });
-  });
+      .on("mouseover", mouseovered)
+      .on("mouseout", mouseouted);
 });
 
-d3.select(window)
-    .on("mousemove", mousemove)
-    .on("mouseup", mouseup);
+function mouseovered(d) {
+  node
+      .each(function(n) { n.target = n.source = false; });
 
-function mouse(e) {
-  return [e.pageX - rx, e.pageY - ry];
+  link
+      .classed("link--target", function(l) { if (l.target === d) return l.source.source = true; })
+      .classed("link--source", function(l) { if (l.source === d) return l.target.target = true; })
+    .filter(function(l) { return l.target === d || l.source === d; })
+      .each(function() { this.parentNode.appendChild(this); });
+
+  node
+      .classed("node--target", function(n) { return n.target; })
+      .classed("node--source", function(n) { return n.source; });
 }
 
-function mousedown() {
-  m0 = mouse(d3.event);
-  d3.event.preventDefault();
+function mouseouted(d) {
+  link
+      .classed("link--target", false)
+      .classed("link--source", false);
+
+  node
+      .classed("node--target", false)
+      .classed("node--source", false);
 }
 
-function mousemove() {
-  if (m0) {
-    var m1 = mouse(d3.event),
-        dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
-    div.style("-webkit-transform", "translateY(" + (ry - rx) + "px)rotateZ(" + dm + "deg)translateY(" + (rx - ry) + "px)");
+d3.select(self.frameElement).style("height", diameter + "px");
+
+// Lazily construct the package hierarchy from class names.
+function packageHierarchy(classes) {
+  var map = {};
+
+  function find(name, data) {
+    var node = map[name], i;
+    if (!node) {
+      node = map[name] = data || {name: name, children: []};
+      if (name.length) {
+        node.parent = find(name.substring(0, i = name.lastIndexOf(".")));
+        node.parent.children.push(node);
+        node.key = name.substring(i + 1);
+      }
+    }
+    return node;
   }
+
+  classes.forEach(function(d) {
+    find(d.name, d);
+  });
+
+  return map[""];
 }
 
-function mouseup() {
-  if (m0) {
-    var m1 = mouse(d3.event),
-        dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
+// Return a list of imports for the given array of nodes.
+function packageImports(nodes) {
+  var map = {},
+      imports = [];
 
-    rotate += dm;
-    if (rotate > 360) rotate -= 360;
-    else if (rotate < 0) rotate += 360;
-    m0 = null;
+  // Compute a map from name to node.
+  nodes.forEach(function(d) {
+    map[d.name] = d;
+  });
 
-    div.style("-webkit-transform", null);
+  // For each import, construct a link from the source to target node.
+  nodes.forEach(function(d) {
+    if (d.imports) d.imports.forEach(function(i) {
+      imports.push({source: map[d.name], target: map[i]});
+    });
+  });
 
-    svg
-        .attr("transform", "translate(" + rx + "," + ry + ")rotate(" + rotate + ")")
-      .selectAll("g.node text")
-        .attr("dx", function(d) { return (d.x + rotate) % 360 < 180 ? 8 : -8; })
-        .attr("text-anchor", function(d) { return (d.x + rotate) % 360 < 180 ? "start" : "end"; })
-        .attr("transform", function(d) { return (d.x + rotate) % 360 < 180 ? null : "rotate(180)"; });
-  }
+  return imports;
 }
 
-function mouseover(d) {
-  svg.selectAll("path.link.target-" + d.key)
-      .classed("target", true)
-      .each(updateNodes("source", true));
-
-  svg.selectAll("path.link.source-" + d.key)
-      .classed("source", true)
-      .each(updateNodes("target", true));
-}
-
-function mouseout(d) {
-  svg.selectAll("path.link.source-" + d.key)
-      .classed("source", false)
-      .each(updateNodes("target", false));
-
-  svg.selectAll("path.link.target-" + d.key)
-      .classed("target", false)
-      .each(updateNodes("source", false));
-}
-
-function updateNodes(name, value) {
-  return function(d) {
-    if (value) this.parentNode.appendChild(this);
-    svg.select("#node-" + d[name].key).classed(name, value);
-  };
-}
-
-function cross(a, b) {
-  return a[0] * b[1] - a[1] * b[0];
-}
-
-function dot(a, b) {
-  return a[0] * b[0] + a[1] * b[1];
-}
-
-    </script>
+</script>
 
     </section>
 
   
   </body>
 </html>
-
-
-<!DOCTYPE html>
-<html>
-  <head>
-  </head>
-  <body>
-    <h2>
-      Flare imports<br>
-      hierarchical edge bundling
-    </h2>
-  </body>
-</html>
-
