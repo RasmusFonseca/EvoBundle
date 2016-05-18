@@ -1,8 +1,8 @@
 [
   {"name1":"ARG135","name2":"ASP134","edgeEvo":[1,1,1,1,1,0,1,1,1,1]},
   {"name1":"ASP134","name2":"TRP161","edgeEvo":[0,0,0,0,1,1,1,1,0,0]},
-  {"name1":"TYR223","name2":"ARG135","edgeEvo":[0,0,0,0,1,1,1,1,0,0]},
-  {"name1":"TYR223","name2":"TYR306","edgeEvo":[1,1,1,0,0,1,1,1,0,1]},
+  {"name1":"TYR223","name2":"ARG135","edgeEvo":[0,0,0,0,1,1,4,4,0,0]},
+  {"name1":"TYR223","name2":"TYR306","edgeEvo":[1,1,1,0,0,1,1,4,0,1]},
   {"name1":"TYR306","name2":"VAL54", "edgeEvo":[0,1,0,0,1,1,1,1,1,0]},
   {"name":"PROT.TM1.VAL54"},
   {"name":"PROT.TM3.ASP134"},
