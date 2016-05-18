@@ -122,7 +122,7 @@ d3.json("interactionTimeline.json", function(classes) {
       splines = bundle(links[0]);
 
   var path = svg.selectAll("path.link")
-      .data(links[0])
+    .data(links[0])
     .enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
       .style("stroke-width",function(d){ return minStrokeWidth; })
@@ -151,12 +151,13 @@ d3.json("interactionTimeline.json", function(classes) {
   d3.select("input[id=timeRange]").on("input", function() {
     timeStep = this.value;
     splines = bundle(links[timeStep]);
-    path = path.data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
+    path = svg.selectAll("path.link")
+      .data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
     path.exit().remove();
     path.enter().append("svg:path")
-      .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+      .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
+    path.style("stroke-width",function(d){ return d.weight*minStrokeWidth; })
       .attr("d", function(d, i) { return line(splines[i]); });
-    path.style("stroke-width",function(d){ return minStrokeWidth; });
   });
 });
 
