@@ -30,6 +30,7 @@ path.arc {
   fill: none;
   stroke: #1f77b4;
   stroke-opacity: .4;
+  stroke-width: 1.0;
   pointer-events: none;
 }
 
@@ -72,7 +73,7 @@ path.arc {
       <script type="text/javascript" src="packages.js"></script>
 
     <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85"></div>
-    <div style="position:absolute;top:40px;left:20px;font-size:18px;">time: <input style="position:relative;top:3px;width:200px" type="range" min="0" max="100" value="0"></div>
+    <div style="position:absolute;top:40px;left:20px;font-size:18px;">time: <input id="timeRange" style="position:relative;top:3px;width:200px" type="range" min="0" max="9" value="0"></div>
 
 <script type="text/javascript">
 
@@ -81,7 +82,8 @@ var w = window.innerWidth || document.body.clientWidth,
     rx = w / 2,
     ry = h / 2,
     m0,
-    rotate = 0;
+    rotate = 0,
+    minStrokeWidth=10;
 
 var splines = [];
 
@@ -125,11 +127,11 @@ d3.text("interactionTimeline.csv", function(rawtext) {
       links = csvToLinks(classes),
       splines = bundle(links[0]);
 
-
   var path = svg.selectAll("path.link")
-      .data(links[0])
+    .data(links[0])
     .enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+      .style("stroke-width",function(d){ return minStrokeWidth; })
       .attr("d", function(d, i) { return line(splines[i]); });
 
   svg.selectAll("g.node")
@@ -150,6 +152,18 @@ d3.text("interactionTimeline.csv", function(rawtext) {
   d3.select("input[type=range]").on("input", function() {
     line.tension(this.value / 100);
     path.attr("d", function(d, i) { return line(splines[i]); });
+  });
+
+  d3.select("input[id=timeRange]").on("input", function() {
+    timeStep = this.value;
+    splines = bundle(links[timeStep]);
+    path = svg.selectAll("path.link")
+      .data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
+    path.exit().remove();
+    path.enter().append("svg:path")
+      .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
+    path.style("stroke-width",function(d){ return d.weight*minStrokeWidth; })
+      .attr("d", function(d, i) { return line(splines[i]); });
   });
 });
 

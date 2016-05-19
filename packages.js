@@ -39,9 +39,9 @@ genLinks = function(nodes) {
       imports.push([]);
 
     d.edgeEvo.forEach(
-        function(connected,i){ 
-          if(connected==1) 
-            imports[i].push({source: map[d.name1], target: map[d.name2]}); 
+        function(w,i){ 
+          if(w>0.0) 
+            imports[i].push({source: map[d.name1], target: map[d.name2], weight: w}); 
         } 
     );
       
