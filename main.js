@@ -6,15 +6,18 @@ function load_dataset(csv) {
   create_bundle(csv);
 }
 
+var w = window.innerWidth || document.body.clientWidth,
+    h = 800,
+    rx = w / 2,
+    ry = h / 2,
+    m0,
+    rotate = 0,
+    minStrokeWidth=10;
+
+var svg, div;
+
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
-  var w = window.innerWidth || document.body.clientWidth,
-      h = 800,
-      rx = w / 2,
-      ry = h / 2,
-      m0,
-      rotate = 0,
-      minStrokeWidth=10;
 
   var splines = [];
 
@@ -34,12 +37,12 @@ function create_bundle(rawText) {
   d3.select("section.main-upload").style("display", "none");
 
   // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
-  var div = d3.select("section.main-content").insert("div")
+  div = d3.select("section.main-content").insert("div")
       .style("width", w + "px")
       .style("height", w + "px")
       .style("-webkit-backface-visibility", "hidden");
 
-  var svg = div.append("svg:svg")
+  svg = div.append("svg:svg")
       .attr("width", w)
       .attr("height", w)
     .append("svg:g")
