@@ -117,14 +117,20 @@ svg.append("svg:path")
     .on("mousedown", mousedown);
 
 //d3.json("interactionTimeline.json", function(classes) {
+//    console.log(classes);
 //  var nodes = cluster.nodes(genRoot(classes)),
 //      links = genLinks(classes),
 //      splines = bundle(links[0]);
+//  console.log("Links:");
+//  console.log(links[0]);
 
 d3.text("interactionTimeline.csv", function(rawtext) {
-  var classes = d3.csv.parseRows(rawtext);
-  var nodes = cluster.nodes(csvToRoot(classes)),
-      links = csvToLinks(classes),
+  var classes = d3.csv.parseRows(rawtext)
+    .map(function(d){return {rawArr:d}; });
+
+  var treeVertices = csvToTree(classes),
+      nodes = cluster.nodes(treeVertices[""]),
+      links = csvToLinks(classes, treeVertices),
       splines = bundle(links[0]);
 
   var path = svg.selectAll("path.link")
@@ -162,7 +168,7 @@ d3.text("interactionTimeline.csv", function(rawtext) {
     path.exit().remove();
     path.enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-    path.style("stroke-width",function(d){ return d.weight*minStrokeWidth; })
+    path.style("stroke-width",function(d){ return minStrokeWidth; })
       .attr("d", function(d, i) { return line(splines[i]); });
   });
 });
