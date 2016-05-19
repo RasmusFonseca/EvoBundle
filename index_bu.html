@@ -114,20 +114,16 @@ svg.append("svg:path")
     .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
     .on("mousedown", mousedown);
 
-//d3.json("interactionTimeline.json", function(classes) {
-//  var nodes = cluster.nodes(genRoot(classes)),
-//      links = genLinks(classes),
-//      splines = bundle(links[0]);
+d3.json("flare-imports.json", function(classes) {
+  var nodes = cluster.nodes(packages.root(classes)),
+      links = packages.imports(nodes),
+      splines = bundle(links);
 
-d3.text("interactionTimeline.csv", function(rawtext) {
-  var classes = d3.csv.parseRows(rawtext);
-  var nodes = cluster.nodes(csvToRoot(classes)),
-      links = csvToLinks(classes),
-      splines = bundle(links[0]);
-
+  console.log(links);
+  console.log(splines);
 
   var path = svg.selectAll("path.link")
-      .data(links[0])
+      .data(links)
     .enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
       .attr("d", function(d, i) { return line(splines[i]); });
