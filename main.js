@@ -23,7 +23,10 @@ function create_bundle(rawText) {
 
   var cluster = d3.layout.cluster()
       .size([360, ry - 120])
-      .sort(function(a, b) { return d3.ascending(a.key, b.key); });
+      .sort(function(a, b) { 
+        var aRes = a.key.replace(/[^0-9]/g,'');
+        var bRes = b.key.replace(/[^0-9]/g,'');
+        return d3.ascending(aRes, bRes); });
 
   var bundle = d3.layout.bundle();
 
@@ -73,7 +76,7 @@ function create_bundle(rawText) {
     .data(links[0])
     .enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
-      .style("stroke-width",function(d){ return minStrokeWidth; })
+      .style("stroke-width",function(d){ return d.weight; })
       .attr("d", function(d, i) { return line(splines[i]); });
 
   svg.selectAll("g.node")
@@ -110,7 +113,7 @@ function create_bundle(rawText) {
     path.exit().remove();
     path.enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-    path.style("stroke-width",function(d){ return minStrokeWidth; })
+    path.style("stroke-width",function(d){ return d.weight; })
       .attr("d", function(d, i) { return line(splines[i]); });
   });
 

@@ -94,16 +94,24 @@ csvToLinks = function(data, treeVertices) {
 
   // For each import, construct a link from the source to target node.
   data.forEach(function(d) {
+    var maxIdx = 0;
     d.interactionTimes = d.rawArr
       .slice(1)
-      .map(function(s){ return parseInt(s); });
-    var maxIdx = d3.max(d.interactionTimes);
+      .map(function(s){ 
+        var time = parseInt(s); 
+        var weight = 1.0;
+        var i;
+        if(i=s.indexOf(":")>0)
+          weight = parseFloat(s.substring(i+1));
+        if(maxIdx<time) maxIdx = time;
+        return {time:time, weight:weight};
+      });
     while(imports.length<=maxIdx) 
       imports.push([]);
 
     d.interactionTimes
      .forEach(function(t){ 
-       imports[t].push({source:treeVertices[d.name1], target:treeVertices[d.name2]});
+       imports[t.time].push({source:treeVertices[d.name1], target:treeVertices[d.name2],weight:t.weight});
      });
       
   });
