@@ -78,18 +78,23 @@ margin:20px;
     <section class="main-upload">
       
       <p>
-      Please upload a comma-separated file where each line contains the names
-      of two interacting partners and a list of interaction times. For example:
+      Please upload a json-file with the following format:
       <pre>
-TM3.ARG135-TM3.ASP134,0,1,2,3,4,6,7,8,9
-TM3.ASP134-TM4.TRP161,4,5,6,7
-TM5.TYR223-TM3.ARG135,4,5,6,7
-TM5.TYR223-TM7.TYR306,0,1,2,5,6,7,9
-TM7.TYR306-TM1.VAL54,1,4,5,6,7,8
+{
+  "interactions":[
+    {
+    {"name1":"TM3.ARG135", "name2":"TM3.ASP134", "frames":[0,1,2,3,4,6,7,8,9]},
+    {"name1":"TM3.ASP134", "name2":"TM4.TRP161", "frames":[4,5,6,7]},
+    {"name1":"TM5.TYR223", "name2":"TM3.ARG135", "frames":[4,5,6,9]},
+    {"name1":"TM5.TYR223", "name2":"TM7.TYR306", "frames":[0,1,2,5,6,7,8]},
+    {"name1":"TM7.TYR306", "name2":"TM1.VAL54",  "frames":[1,4,5,6,7,8]}
+  ]
+}
       </pre>
       Here TM3.ARG135 and TM3.ASP134 interacts at times 0 to 4 and 6 to 9.
       Dot-separated names will be used to cluster vertices and can affect
-      sorting. Try for example <a href="real_example-salt_bridges.csv">real_example-salt_bridges.csv</a>.
+      sorting. Try for example <a href="real_example-salt_bridges.json">real_example-salt_bridges.json</a>
+      or <a href="mor-active-rep1-wb.json">mor-active-rep1-wb.json</a>.
       </p>
       <input type="file" id="uploader">
       <p id="stats"></p>
