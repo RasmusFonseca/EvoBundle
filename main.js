@@ -2,8 +2,8 @@
 var dz;
 
 // load dataset and create table
-function load_dataset(csv) {
-  create_bundle(csv);
+function load_dataset(json) {
+  create_bundle(json);
 }
 
 var w = window.innerWidth || document.body.clientWidth,
@@ -11,15 +11,14 @@ var w = window.innerWidth || document.body.clientWidth,
     rx = w / 2,
     ry = h / 2,
     m0,
-    rotate = 0,
-    minStrokeWidth=1;
+    rotate = 0;
+
+var stdEdgeColor = "#1f77b4";
 
 var svg, div;
 
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
-
-  var splines = [];
 
   var cluster = d3.layout.cluster()
       .size([360, ry - 120])
@@ -64,19 +63,24 @@ function create_bundle(rawText) {
   //  console.log("Links:");
   //  console.log(links[0]);
 
-  var classes = d3.csv.parseRows(rawText)
-    .map(function(d){return {rawArr:d}; });
+  //var classes = d3.csv.parseRows(rawText)
+  //  .map(function(d){return {rawArr:d}; });
+  var json = JSON.parse(rawText);
+  var graph = parse(json);
 
-  var treeVertices = csvToTree(classes),
-      nodes = cluster.nodes(treeVertices[""]),
-      links = csvToLinks(classes, treeVertices),
+  console.log(graph.treeRoot);
+  var nodes = cluster.nodes(graph.treeRoot),
+      links = graph.frames,
       splines = bundle(links[0]);
+
+  console.log(nodes);
 
   var path = svg.selectAll("path.link")
     .data(links[0])
     .enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
-      .style("stroke-width",function(d){ return d.weight; })
+      .style("stroke-width",function(d){ return d.width; })
+      .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
       .attr("d", function(d, i) { return line(splines[i]); });
 
   svg.selectAll("g.node")
@@ -93,6 +97,23 @@ function create_bundle(rawText) {
       .text(function(d) { return d.key; })
       .on("mouseover", mouseover)
       .on("mouseout", mouseout);
+
+  var arcWidth = 300.0/graph.nodes.length;
+  var arc = d3.svg.arc()
+    .innerRadius(ry-80)
+    .outerRadius(ry-70)
+    .startAngle(-arcWidth*Math.PI/360)
+    .endAngle(arcWidth*Math.PI/360);
+
+  svg.selectAll("g.nodeBar")
+      .data(nodes.filter(function(n) { return !n.children; }))
+    .enter().append("svg:g")
+      .attr("class", "nodeBar")
+      .attr("id", function(d) { return "nodeBar-" + d.key; })
+    .append("path")
+      .attr("transform", function(d) { return "rotate(" + (d.x )+ ")" ; })
+      .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
+      .attr("d", arc);
 
   d3.select("input[type=range]").on("input", function() {
     line.tension(this.value / 100);
@@ -113,7 +134,8 @@ function create_bundle(rawText) {
     path.exit().remove();
     path.enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-    path.style("stroke-width",function(d){ return d.weight; })
+    path.style("stroke-width",function(d){ return d.width; })
+      .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
       .attr("d", function(d, i) { return line(splines[i]); });
   });
 

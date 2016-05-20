@@ -60,6 +60,9 @@ margin:20px;
 }
 
     </style>
+
+      <script src="http://d3js.org/d3.v3.min.js"></script>
+      <script type="text/javascript" src="parse.js"></script>
   </head>
   <body>
 <!--
@@ -93,15 +96,17 @@ TM7.TYR306-TM1.VAL54,1,4,5,6,7,8
       <script src="main.js"></script>
       <script>
 upload_button("uploader", load_dataset);
+//d3.text("real_example-salt_bridges.json", function(rawtext){
+//  load_dataset(rawtext);
+//});
       </script>
     </section>
 
-    <section class="main-content" style="display:none">
-      <script src="http://d3js.org/d3.v3.min.js"></script>
-      <script type="text/javascript" src="packages.js"></script>
+    <section class="main-content" style="display:block">
 
       <div style="position:relative;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
       <div style="position:relative;top:40px;left:20px;font-size:18px;">time: <input id="timeRange" style="position:relative;top:3px;width:200px" type="range" min="0" max="1000" value="0" /><span style="margin-left:5px" id="timeLabel">0</span></div>
+      
 
     </section>
 
