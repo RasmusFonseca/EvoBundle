@@ -12,7 +12,7 @@ var w = window.innerWidth || document.body.clientWidth,
     ry = h / 2,
     m0,
     rotate = 0,
-    minStrokeWidth=10;
+    minStrokeWidth=1;
 
 var svg, div;
 
