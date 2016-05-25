@@ -15,7 +15,7 @@ var w = 800,
 
 var stdEdgeColor = "#1f77b4";
 
-var svg, div;
+var svg, div, buttons;
 
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
@@ -143,57 +143,78 @@ function create_bundle(rawText) {
       .on("mousemove", mousemove)
       .on("mouseup", mouseup);
 
+  //Set up controls
   var ch = 30,
       cp = 2,
       cw = 3*ch+2*cp;
 
   var controls = d3.select("div#evocontrols")
       .select("#controls")
+      .style("width",cw)
+      .style("height",ch)
     .append("svg:svg")
       .attr("width", cw)
       .attr("height", ch);
 
   var controlData = [
-    {xoffset:0, symbol:"&#9194;", callback:reverse},
-    {xoffset:1, symbol:"&#9208;", callback:pause},
-    {xoffset:1, symbol:"&#9654;", callback:play},
-    {xoffset:2, symbol:"&#9193;", callback:forward}
+    {xoffset:0, symbol:"<<", callback:reverse},
+    {xoffset:1, symbol:">", callback:playpause},
+    {xoffset:2, symbol:">>", callback:forward}
   ];
-  //controls.selectAll("circle")
-  //    .data(controlData)
-  //  .enter().append("circle")
-  //    .style("fill",  "white")
-  //    .style("stroke","black")
-  //    .style("stroke-width","1")
-  //    .attr("r",  ch/2-cp)
-  //    .attr("cx", function(d){ return d.xoffset*(ch+cp)+ch/2; })
-  //    .attr("cy", function(d){ return ch/2; });
 
-  //controls.selectAll("text")
+  //buttons = controls.selectAll("g")
   //    .data(controlData)
-  //  .enter().append("text")
-  //    .attr("x", function(d){ return d.xoffset*(ch+cp)+ch/2; })
-  //    .attr("y", function(d){ return ch/2; })
-  //    //.style("dominant-baseline","central")
-  //    .style("alignment-baseline","middle")
-  //    .style("text-anchor","middle")
-  //    .html(function(d){ return d.symbol; });
+  //  .enter().append("g").append("circle")
+  controls.selectAll("circle")
+      .data(controlData)
+    .enter().append("circle")
+      .style("fill",  "white")
+      .style("stroke","gray")
+      .style("stroke-width","1")
+      .attr("r",  ch/2-cp)
+      .attr("cx", function(d){ return d.xoffset*(ch+cp)+ch/2; })
+      .attr("cy", function(d){ return ch/2; })
+      .style("cursor", "pointer")
+      .on("click", function(d){ d.callback(); });
 
+  controls.selectAll("text")
+      .data(controlData)
+    .enter().append("text")
+      .attr("x", function(d){ return d.xoffset*(ch+cp)+ch/2; })
+      .attr("y", function(d){ return ch/2; })
+      //.style("dominant-baseline","central")
+      .style("alignment-baseline","middle")
+      .style("text-anchor","middle")
+      .style("font-size",ch/3)
+      .attr('pointer-events', 'none')
+      .html(function(d){ return d.symbol; });
+
+  d3.select("div#evocontrols #timeRange")
+    .style("width",(w-2*cw-20)+"px")
+    .style("height", ch+"px");
+
+  d3.select("div#evocontrols #timeLabel")
+    .style("position","absolute")
+    .style("alignment-baseline","middle")
+    .style("left",(w-cw)+"px")
+    .style("width",cw+"px")
+    .style("line-height", ch+"px")
+    .style("height", ch+"px");
 
   
 }
 
-function play(){
-  console.log("PLAY");
-}
-function pause(){
-  console.log("PAUSE");
+function playpause(){
+  console.log("PLAY/PAUSE");
 }
 function reverse(){
   console.log("REVERSE");
 }
 function forward(){
   console.log("FORWARD");
+  var range = d3.select("div#evocontrols #timeRange");
+  var maxVal = range.attr("max");
+  range.attr("value",maxVal);
 }
 
 
