@@ -6,7 +6,7 @@ function load_dataset(json) {
   create_bundle(json);
 }
 
-var w = window.innerWidth || document.body.clientWidth,
+var w = 800,
     h = 800,
     rx = w / 2,
     ry = h / 2,
@@ -46,7 +46,7 @@ function create_bundle(rawText) {
 
   svg = div.append("svg:svg")
       .attr("width", w)
-      .attr("height", w)
+      .attr("height", h)
     .append("svg:g")
       .attr("transform", "translate(" + rx + "," + ry + ")");
 
@@ -68,12 +68,10 @@ function create_bundle(rawText) {
   var json = JSON.parse(rawText);
   var graph = parse(json);
 
-  console.log(graph.treeRoot);
   var nodes = cluster.nodes(graph.treeRoot),
       links = graph.frames,
       splines = bundle(links[0]);
 
-  console.log(nodes);
 
   var path = svg.selectAll("path.link")
     .data(links[0])
@@ -95,8 +93,8 @@ function create_bundle(rawText) {
       .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
       .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
       .text(function(d) { return d.key; })
-      .on("mouseover", mouseover)
-      .on("mouseout", mouseout);
+      .on("mouseover", mouseoverNode)
+      .on("mouseout", mouseoutNode);
 
   var arcWidth = 300.0/graph.nodes.length;
   var arc = d3.svg.arc()
@@ -124,29 +122,80 @@ function create_bundle(rawText) {
   d3.select("input[id=timeRange]")
     .attr("max", links.length-1)
     .on("input", function() {
-    timeStep = this.value;
-    d3.select("span[id=timeLabel]")
-      .text(""+timeStep);
+      timeStep = this.value;
+      d3.select("span[id=timeLabel]")
+        .text(""+timeStep);
 
-    splines = bundle(links[timeStep]);
-    path = svg.selectAll("path.link")
-      .data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
-    path.exit().remove();
-    path.enter().append("svg:path")
-      .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-    path.style("stroke-width",function(d){ return d.width; })
-      .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
-      .attr("d", function(d, i) { return line(splines[i]); });
-  });
-
+      splines = bundle(links[timeStep]);
+      path = svg.selectAll("path.link")
+        .data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
+      path.exit().remove();
+      path.enter().append("svg:path")
+        .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
+      path.style("stroke-width",function(d){ return d.width; })
+        .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+        .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
+        .attr("d", function(d, i) { return line(splines[i]); });
+    });
 
 
   d3.select(window)
       .on("mousemove", mousemove)
       .on("mouseup", mouseup);
 
+  var ch = 30,
+      cp = 2,
+      cw = 3*ch+2*cp;
+
+  var controls = d3.select("div#evocontrols")
+      .select("#controls")
+    .append("svg:svg")
+      .attr("width", cw)
+      .attr("height", ch);
+
+  var controlData = [
+    {xoffset:0, symbol:"&#9194;", callback:reverse},
+    {xoffset:1, symbol:"&#9208;", callback:pause},
+    {xoffset:1, symbol:"&#9654;", callback:play},
+    {xoffset:2, symbol:"&#9193;", callback:forward}
+  ];
+  //controls.selectAll("circle")
+  //    .data(controlData)
+  //  .enter().append("circle")
+  //    .style("fill",  "white")
+  //    .style("stroke","black")
+  //    .style("stroke-width","1")
+  //    .attr("r",  ch/2-cp)
+  //    .attr("cx", function(d){ return d.xoffset*(ch+cp)+ch/2; })
+  //    .attr("cy", function(d){ return ch/2; });
+
+  //controls.selectAll("text")
+  //    .data(controlData)
+  //  .enter().append("text")
+  //    .attr("x", function(d){ return d.xoffset*(ch+cp)+ch/2; })
+  //    .attr("y", function(d){ return ch/2; })
+  //    //.style("dominant-baseline","central")
+  //    .style("alignment-baseline","middle")
+  //    .style("text-anchor","middle")
+  //    .html(function(d){ return d.symbol; });
+
+
   
 }
+
+function play(){
+  console.log("PLAY");
+}
+function pause(){
+  console.log("PAUSE");
+}
+function reverse(){
+  console.log("REVERSE");
+}
+function forward(){
+  console.log("FORWARD");
+}
+
 
 function mouse(e) {
   return [e.pageX - rx, e.pageY - ry];
@@ -186,7 +235,7 @@ function mouseup() {
   }
 }
 
-function mouseover(d) {
+function mouseoverNode(d) {
   svg.selectAll("path.link.target-" + d.key)
       .classed("target", true)
       .each(updateNodes("source", true));
@@ -196,7 +245,7 @@ function mouseover(d) {
       .each(updateNodes("target", true));
 }
 
-function mouseout(d) {
+function mouseoutNode(d) {
   svg.selectAll("path.link.source-" + d.key)
       .classed("source", false)
       .each(updateNodes("target", false));

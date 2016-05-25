@@ -40,15 +40,15 @@ path.arc {
 }
 
 .node.target {
-  fill: #d62728 !important;
+  font-weight: bold;
 }
 
 .link.source {
-  stroke: #d62728;
+  stroke: #2ca02c;
 }
 
 .node.source {
-  fill: #2ca02c;
+  font-weight: bold;
 }
 
 .link.target {
@@ -56,7 +56,7 @@ path.arc {
 }
 
 body{
-margin:20px;
+  margin:20px;
 }
 
     </style>
@@ -100,17 +100,25 @@ margin:20px;
       <p id="stats"></p>
       <script src="main.js"></script>
       <script>
-upload_button("uploader", load_dataset);
-//d3.text("real_example-salt_bridges.json", function(rawtext){
-//  load_dataset(rawtext);
-//});
+//upload_button("uploader", load_dataset);
+d3.text("mor-active-rep1-wb.json", function(rawtext){
+  load_dataset(rawtext);
+});
       </script>
     </section>
 
     <section class="main-content" style="display:none">
 
-      <div style="position:relative;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
-      <div style="position:relative;top:40px;left:20px;font-size:18px;">time: <input id="timeRange" style="position:relative;top:3px;width:200px" type="range" min="0" max="1000" value="0" /><span style="margin-left:5px" id="timeLabel">0</span></div>
+      <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
+      <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
+        <span id="controls-rewind">&#9194;</span>
+        <span id="controls-play">&#x25b6;&#9654;</span>
+
+        
+        <span id="controls-forward">&#9193;</span>
+        <input id="timeRange" style="position:relative;top:3px;width:200px" type="range" min="0" max="1000" value="0" />
+        <span style="margin-left:5px" id="timeLabel">0</span>
+      </div>
       
 
     </section>
