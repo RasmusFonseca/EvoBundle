@@ -93,18 +93,32 @@ body{
       </pre>
       Here TM3.ARG135 and TM3.ASP134 interacts at times 0 to 4 and 6 to 9.
       Dot-separated names will be used to cluster vertices and can affect
-      sorting. Try for example <a href="real_example-salt_bridges.json">real_example-salt_bridges.json</a>
-      or <a href="mor-active-rep1-wb.json">mor-active-rep1-wb.json</a>.
+      sorting.</p>
+      <p>Try for example:
+      <ul>
+        <li><a href="javascript:loadExample('real_example-salt_bridges.json')">example-salt_bridges.json</a> [1.7MB, <a href="real_example-salt_bridges.json">raw</a>]</li>
+        <li><a href="javascript:loadExample('mor-active-rep1-wb.json')">mor-active-rep1-wb.json</a> [14MB, <a href="mor-active-rep1-wb.json">raw</a>].</li>
+        <li><a href="javascript:loadExample('top7_processed.json')">top7_processed.json</a> [50MB, <a href="top7_processed.json">raw</a>].</li>
+      </ul>
+      or upload your own ...
       </p>
       <input type="file" id="uploader">
       <p id="stats"></p>
       <script src="main.js"></script>
       <script>
-//upload_button("uploader", load_dataset);
+upload_button("uploader", load_dataset);
+
+function loadExample(fileName){
+  d3.select("section.main-content").style("display", "block");
+  d3.select("section.main-upload").style("display", "none");
+  d3.text(fileName, function(rawtext){
+    load_dataset(rawtext);
+  });
+}
 //d3.text("mor-active-rep1-wb.json", function(rawtext){
-d3.text("top7_processed.json", function(rawtext){
-  load_dataset(rawtext);
-});
+//d3.text("top7_processed.json", function(rawtext){
+//  load_dataset(rawtext);
+//});
       </script>
     </section>
 
