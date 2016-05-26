@@ -2,7 +2,7 @@
 <html lang="en-us">
   <head>
     <meta charset="UTF-8">
-    <title>Evobundle by RasmusFonseca</title>
+    <title>EvoBundle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
@@ -59,6 +59,10 @@ body{
   margin:20px;
 }
 
+section{
+  width:900px;
+}
+
     </style>
 
       <script src="http://d3js.org/d3.v3.min.js"></script>
@@ -76,9 +80,16 @@ body{
 -->
 
     <section class="main-upload">
-      
+      <h1>Time-evolving bundle plots</h1>
       <p>
-      Please upload a json-file with the following format:
+      <a href="https://bl.ocks.org/mbostock/7607999"><img src="bundleThumb.png" align="left" width="100px"></a>
+      Bundle-plots illustrate contacts between grouped nodes and are useful for
+      exploring interaction graphs. We have added a time-slider to display
+      dynamically changing networks, and added circular layers of color-coded
+      annotations.
+      </p>
+      <p>
+      The input is a JSON-file with the following format:
       <pre>
 {
   "interactions":[
