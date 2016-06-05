@@ -15,7 +15,7 @@ var w = 800,
 
 var stdEdgeColor = "#1f77b4";
 
-var svg, div, buttons;
+var svg, div, buttons, bundle, line, nodes, splines, links;
 
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
@@ -27,9 +27,9 @@ function create_bundle(rawText) {
         var bRes = b.key.replace(/[^0-9]/g,'');
         return d3.ascending(aRes, bRes); });
 
-  var bundle = d3.layout.bundle();
+  bundle = d3.layout.bundle();
 
-  var line = d3.svg.line.radial()
+  line = d3.svg.line.radial()
       .interpolate("bundle")
       .tension(.85)
       .radius(function(d) { return d.y; })
@@ -68,9 +68,9 @@ function create_bundle(rawText) {
   var json = JSON.parse(rawText);
   var graph = parse(json);
 
-  var nodes = cluster.nodes(graph.treeRoot),
-      links = graph.frames,
-      splines = bundle(links[0]);
+  nodes = cluster.nodes(graph.treeRoot);
+  links = graph.frames,
+  splines = bundle(links[0]);
 
 
   var path = svg.selectAll("path.link")
@@ -121,22 +121,23 @@ function create_bundle(rawText) {
 
   d3.select("input[id=timeRange]")
     .attr("max", links.length-1)
-    .on("input", function() {
-      timeStep = this.value;
-      d3.select("span[id=timeLabel]")
-        .text(""+timeStep);
-
-      splines = bundle(links[timeStep]);
-      path = svg.selectAll("path.link")
-        .data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
-      path.exit().remove();
-      path.enter().append("svg:path")
-        .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-      path.style("stroke-width",function(d){ return d.width; })
-        .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
-        .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
-        .attr("d", function(d, i) { return line(splines[i]); });
-    });
+    .on("input", function(){setFrame(this.value);} );
+//    .on("input", function() {
+//      timeStep = this.value;
+//      d3.select("span[id=timeLabel]")
+//        .text(""+timeStep);
+//
+//      splines = bundle(links[timeStep]);
+//      path = svg.selectAll("path.link")
+//        .data(links[timeStep]);//, function(d){ return {source:d.source, target:d.target}; });
+//      path.exit().remove();
+//      path.enter().append("svg:path")
+//        .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
+//      path.style("stroke-width",function(d){ return d.width; })
+//        .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+//        .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
+//        .attr("d", function(d, i) { return line(splines[i]); });
+//    });
 
 
   d3.select(window)
@@ -157,17 +158,20 @@ function create_bundle(rawText) {
       .attr("height", ch);
 
   var controlData = [
-    {xoffset:0, symbol:"<<", callback:reverse},
-    {xoffset:1, symbol:">", callback:playpause},
-    {xoffset:2, symbol:">>", callback:forward}
+    {xoffset:0, id:"reverse",   symbol:"<<", callback:reverse},
+    {xoffset:1, id:"playpause", symbol:">", callback:playpause},
+    {xoffset:2, id:"forward",   symbol:">>", callback:forward}
   ];
 
   //buttons = controls.selectAll("g")
   //    .data(controlData)
   //  .enter().append("g").append("circle")
-  controls.selectAll("circle")
+  var buttons = controls.selectAll("g")
       .data(controlData)
-    .enter().append("circle")
+    .enter().append("g");
+
+  buttons
+      .append("circle")
       .style("fill",  "white")
       .style("stroke","gray")
       .style("stroke-width","1")
@@ -177,9 +181,11 @@ function create_bundle(rawText) {
       .style("cursor", "pointer")
       .on("click", function(d){ d.callback(); });
 
-  controls.selectAll("text")
-      .data(controlData)
-    .enter().append("text")
+  console.log(buttons);
+
+  buttons
+      .append("text")
+      .attr("id", function(d){ return d.id; })
       .attr("x", function(d){ return d.xoffset*(ch+cp)+ch/2; })
       .attr("y", function(d){ return ch/2; })
       //.style("dominant-baseline","central")
@@ -200,21 +206,65 @@ function create_bundle(rawText) {
     .style("width",cw+"px")
     .style("line-height", ch+"px")
     .style("height", ch+"px");
+}
 
+var playing = false;
+
+function setFrame(frame){
+  d3.select("span[id=timeLabel]")
+    .text(""+frame);
+
+  splines = bundle(links[frame]);
+  path = svg.selectAll("path.link")
+    .data(links[frame]);//, function(d){ return {source:d.source, target:d.target}; });
+  path.exit().remove();
+  path.enter().append("svg:path")
+    .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
+  path.style("stroke-width",function(d){ return d.width; })
+    .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+    .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
+    .attr("d", function(d, i) { return line(splines[i]); });
+
+}
+
+function playTick(){
+  var timeRange = d3.select("input[id=timeRange]");
+  var curValue = parseInt(timeRange[0][0].value);
+  if(playing && curValue+1<links.length-1) {
+    timeRange[0][0].value = curValue+1;
+    setFrame(curValue+1);
+
+    setTimeout(playTick, 50);
+  }else{
+    playing=false;
+  }
   
+  //Update play/pause symbol
+  var sym = playing?"#":">";
+  d3.select("#playpause")
+    .html(sym);
 }
 
 function playpause(){
-  console.log("PLAY/PAUSE");
+  playing = !playing;
+  if(playing) {
+    playTick();
+  }
 }
+
 function reverse(){
-  console.log("REVERSE");
+  var timeRange = d3.select("input[id=timeRange]");
+  var minVal = timeRange.attr("min");
+  timeRange[0][0].value = minVal;
+  setFrame(minVal);
 }
+
 function forward(){
-  console.log("FORWARD");
-  var range = d3.select("div#evocontrols #timeRange");
-  var maxVal = range.attr("max");
-  range.attr("value",maxVal);
+  playing = false;
+  var timeRange = d3.select("input[id=timeRange]");
+  var maxVal = timeRange.attr("max");
+  timeRange[0][0].value = maxVal;
+  setFrame(maxVal);
 }
 
 
