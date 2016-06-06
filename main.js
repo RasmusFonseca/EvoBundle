@@ -15,6 +15,7 @@ var w = 800,
 
 //var stdEdgeColor = "#1f77b4";
 var stdEdgeColor = "#AAA";
+var stdEdgeWidth = 2;
 
 var svg, div, buttons, bundle, line, nodes, splines, links;
 
@@ -78,7 +79,7 @@ function create_bundle(rawText) {
     .data(links[0])
     .enter().append("svg:path")
       .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
-      .style("stroke-width",function(d){ return d.width; })
+      .style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
       .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
       .attr("d", function(d, i) { return line(splines[i]); });
 
@@ -95,7 +96,8 @@ function create_bundle(rawText) {
       .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
       .text(function(d) { return d.key; })
       .on("mouseover", mouseoverNode)
-      .on("mouseout", mouseoutNode);
+      .on("mouseout", mouseoutNode)
+      .on("click", toggleNode);
 
   var arcWidth = 300.0/graph.nodes.length;
   var arc = d3.svg.arc()
@@ -114,9 +116,10 @@ function create_bundle(rawText) {
       .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
       .attr("d", arc);
 
-  d3.select("input[type=range]").on("input", function() {
-    line.tension(this.value / 100);
-    path.attr("d", function(d, i) { return line(splines[i]); });
+  d3.select("input[type=range]")
+    .on("input", function() {
+      line.tension(this.value / 100);
+      path.attr("d", function(d, i) { return line(splines[i]); });
   });
 
 
@@ -222,7 +225,7 @@ function setFrame(frame){
   path.exit().remove();
   path.enter().append("svg:path")
     .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-  path.style("stroke-width",function(d){ return d.width; })
+  path.style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
     .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
     .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
     .attr("d", function(d, i) { return line(splines[i]); });
@@ -270,6 +273,14 @@ function forward(){
   setFrame(maxVal);
 }
 
+
+function toggleNode(d,i){
+  var toggled = d3.select(this.parentNode).attr("class")=="toggledNode";
+  d3.select(this.parentNode)
+    .attr("class", function(){return toggled?"node":"toggledNode"; }); 
+
+  //svg.selectAll("path.link/target-"+d.key);
+}
 
 function mouse(e) {
   return [e.pageX - rx, e.pageY - ry];
