@@ -209,6 +209,7 @@ function create_bundle(rawText) {
 }
 
 var playing = false;
+var frameskip = 10;
 
 function setFrame(frame){
   d3.select("span[id=timeLabel]")
@@ -230,9 +231,10 @@ function setFrame(frame){
 function playTick(){
   var timeRange = d3.select("input[id=timeRange]");
   var curValue = parseInt(timeRange[0][0].value);
-  if(playing && curValue+1<links.length-1) {
-    timeRange[0][0].value = curValue+1;
-    setFrame(curValue+1);
+  if(playing && curValue+frameskip<links.length-1) {
+    var skip = Math.min(frameskip, links.length-1-frameskip);
+    timeRange[0][0].value = curValue+skip;
+    setFrame(curValue+skip);
 
     setTimeout(playTick, 50);
   }else{
