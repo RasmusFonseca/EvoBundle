@@ -13,7 +13,8 @@ var w = 800,
     m0,
     rotate = 0;
 
-var stdEdgeColor = "#1f77b4";
+//var stdEdgeColor = "#1f77b4";
+var stdEdgeColor = "#AAA";
 
 var svg, div, buttons, bundle, line, nodes, splines, links;
 
