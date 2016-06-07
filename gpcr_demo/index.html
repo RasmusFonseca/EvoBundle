@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>EvoBundle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <!--<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">-->
+
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <!--<link type="text/css" rel="stylesheet" href="style.css"/>-->
+<style type="text/css">
+
+path.arc {
+  cursor: move;
+  fill: #fff;
+}
+
+.node {
+  font-size: 10px;
+  fill:#888;
+  cursor: pointer;
+}
+
+.node:hover {
+  fill: #1f77b4;
+}
+
+.toggledNode{
+  font-size: 10px;
+  fill: "black";
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.link {
+  fill: none;
+  stroke: #AAA;
+  stroke-opacity: .4;
+  stroke-width: 2.0;
+  pointer-events: none;
+}
+
+.link.source, .link.target {
+  stroke-opacity: 1;
+  stroke-width: 2px;
+}
+
+.node.target {
+  font-weight: bold;
+}
+
+.link.source {
+  stroke: #2ca02c;
+}
+
+.node.source {
+  font-weight: bold;
+}
+
+.link.target {
+  stroke: #2ca02c;
+}
+
+svg text {
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+svg text::selection {
+    background: none;
+}
+
+body{
+  margin:20px;
+}
+
+section{
+  width:900px;
+}
+
+    </style>
+
+      <script src="http://d3js.org/d3.v3.min.js"></script>
+      <script type="text/javascript" src="parse.js"></script>
+  </head>
+  <body>
+<!--
+    <section class="page-header">
+      <h1 class="project-name">Evobundle</h1>
+      <h2 class="project-tagline">Bundle visualization that evolves</h2>
+      <a href="https://github.com/RasmusFonseca/EvoBundle" class="btn">View on GitHub</a>
+      <a href="https://github.com/RasmusFonseca/EvoBundle/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/RasmusFonseca/EvoBundle/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+-->
+
+    <section class="main-head">
+      <h1>Time-evolving contact maps</h1>
+      <p>
+      <a href="https://bl.ocks.org/mbostock/7607999"><img src="bundleThumb.png" align="left" width="100px"></a>
+      Bundle-plots illustrate contacts between grouped nodes and are useful for
+      exploring interaction graphs. We have added a time-slider to illustrate
+      the evolution of dynamically changing networks, and added circular layers
+      of color-coded annotations.
+      </p>
+      <p>
+      Below is shown contact networks for 30000 steps from an MD-run of the morphine receptor. 
+      </p>
+    </section>
+
+    <section class="main-content" style="display:none">
+
+      <script src="../main.js"></script>
+      <script>
+d3.text("../mor-active-rep1-wb.json", function(rawtext){
+  load_dataset(rawtext);
+});
+      </script>
+      <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
+      <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
+        <span  id="controls"></span>
+        <input id="timeRange" type="range" min="0" max="1000" value="0" />
+        <span id="timeLabel">0</span>
+      </div>
+      
+
+    </section>
+
+  
+  </body>
+</html>
