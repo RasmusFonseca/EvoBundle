@@ -4,13 +4,9 @@
     <meta charset="UTF-8">
     <title>EvoBundle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="../stylesheets/normalize.css" media="screen">
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
-    <!--<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
-    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">-->
-
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
-    <!--<link type="text/css" rel="stylesheet" href="style.css"/>-->
 <style type="text/css">
 
 path.arc {
@@ -74,34 +70,30 @@ svg text::selection {
     background: none;
 }
 
+#pviewer {
+  width:800px;
+  padding:2px;
+  border: 2px solid gray;
+}
+
 body{
   margin:20px;
 }
 
 section{
-  width:900px;
+  width:800px;
 }
 
     </style>
-
       <script src="http://d3js.org/d3.v3.min.js"></script>
-      <script type="text/javascript" src="parse.js"></script>
+      <script type="text/javascript" src="../parse.js"></script>
+      <script type="text/javascript" src="pv.min.js"></script>
   </head>
   <body>
-<!--
-    <section class="page-header">
-      <h1 class="project-name">Evobundle</h1>
-      <h2 class="project-tagline">Bundle visualization that evolves</h2>
-      <a href="https://github.com/RasmusFonseca/EvoBundle" class="btn">View on GitHub</a>
-      <a href="https://github.com/RasmusFonseca/EvoBundle/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/RasmusFonseca/EvoBundle/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
--->
 
     <section class="main-head">
       <h1>Time-evolving contact maps</h1>
       <p>
-      <a href="https://bl.ocks.org/mbostock/7607999"><img src="bundleThumb.png" align="left" width="100px"></a>
       Bundle-plots illustrate contacts between grouped nodes and are useful for
       exploring interaction graphs. We have added a time-slider to illustrate
       the evolution of dynamically changing networks, and added circular layers
@@ -110,9 +102,59 @@ section{
       <p>
       Below is shown contact networks for 30000 steps from an MD-run of the morphine receptor. 
       </p>
+      <div id="pviewer" ></div>
+      <script type='text/javascript'>
+// override the default options with something less restrictive.
+var options = {
+  width: 800,
+  height: 300,
+  antialias: true,
+  quality : 'medium'
+};
+// insert the viewer under the Dom element with id 'gl'.
+var viewer = pv.Viewer(document.getElementById('pviewer'), options);
+
+
+function loadMethylTransferase() {
+  // asynchronously load the PDB file for the dengue methyl transferase
+  // from the server and display it in the viewer.
+  pv.io.fetchPdb('5c1m.pdb', function(structure) {
+      viewer.trace('protein', structure, { color : color.ssSuccession() });
+      var ligands = structure.select({ rnames : ['YCM', '4VO', 'OLC', 'CLR', 'P04', 'P6G'] });
+      viewer.ballsAndSticks('ligands', ligands);
+      //viewer.setRotation([0,0,-1,0,1,0,1,0,0]);
+      var rotation = pv.viewpoint.principalAxes(viewer.all()[0]);
+      viewer.setRotation(rotation)
+      //viewer.autoZoom();
+      viewer.fitTo(structure);
+      var randAtom = structure.atom('A.95.CA');
+      var options = { fontSize : 16, fontColor: '#aee', backgroundAlpha:0.8  };
+      viewer.label('label', randAtom.qualifiedName(), randAtom.pos(), options);
+
+      var cm = viewer.customMesh('interaction');
+      cm.addTube( structure.atom('A.95.CA').pos(), structure.atom('A.116.CA').pos(), 0.5, {cap:true, color:'red'});
+
+      viewer.rm('interaction');
+  });
+}
+
+// load the methyl transferase once the DOM has finished loading. That's
+// the earliest point the WebGL context is available.
+document.addEventListener('DOMContentLoaded', loadMethylTransferase);
+</script>
     </section>
 
-    <section class="main-content" style="display:none">
+    <section class="main-content">
+
+      <div id="evobundlediv">
+        <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
+        <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
+          <span  id="controls"></span>
+          <input id="timeRange" type="range" min="0" max="1000" value="0" />
+          <span id="timeLabel">0</span>
+        </div>
+      </div>
+      
 
       <script src="../main.js"></script>
       <script>
@@ -120,14 +162,6 @@ d3.text("../mor-active-rep1-wb.json", function(rawtext){
   load_dataset(rawtext);
 });
       </script>
-      <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
-      <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
-        <span  id="controls"></span>
-        <input id="timeRange" type="range" min="0" max="1000" value="0" />
-        <span id="timeLabel">0</span>
-      </div>
-      
-
     </section>
 
   

@@ -45,11 +45,11 @@ function create_bundle(rawText) {
       .radius(function(d) { return d.y; })
       .angle(function(d) { return d.x / 180 * Math.PI; });
 
-  d3.select("section.main-content").style("display", "block");
-  d3.select("section.main-upload").style("display", "none");
+
+  d3.select("#evobundlediv").style("position","relative");
 
   // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
-  div = d3.select("section.main-content").insert("div")
+  div = d3.select("#evobundlediv").insert("div")
       .style("width", w + "px")
       .style("height", w + "px")
       .style("-webkit-backface-visibility", "hidden");
