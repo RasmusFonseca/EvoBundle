@@ -25,8 +25,16 @@ function create_bundle(rawText) {
   var cluster = d3.layout.cluster()
       .size([360, ry - 120])
       .sort(function(a, b) { 
-        var aRes = a.key.replace(/[^0-9]/g,'');
-        var bRes = b.key.replace(/[^0-9]/g,'');
+        
+        var aRes = a.key.match(/[0-9]*$/);
+        var bRes = b.key.match(/[0-9]*$/);
+        if(aRes.length==0 || bRes.length==0){
+          aRes = a.key;
+          bRes = b.key;
+        }else{
+          aRes = parseInt(aRes[0]);
+          bRes = parseInt(bRes[0]);
+        }
         return d3.ascending(aRes, bRes); });
 
   bundle = d3.layout.bundle();
