@@ -127,14 +127,14 @@ function loadMethylTransferase() {
       viewer.setRotation(rotation)
       //viewer.autoZoom();
       viewer.fitTo(structure);
-      var randAtom = structure.atom('A.95.CA');
-      var options = { fontSize : 16, fontColor: '#aee', backgroundAlpha:0.8  };
-      viewer.label('label', randAtom.qualifiedName(), randAtom.pos(), options);
+      //var randAtom = structure.atom('A.95.CA');
+      //var options = { fontSize : 16, fontColor: '#aee', backgroundAlpha:0.8  };
+      //viewer.label('label', randAtom.qualifiedName(), randAtom.pos(), options);
 
-      var cm = viewer.customMesh('interaction');
-      cm.addTube( structure.atom('A.95.CA').pos(), structure.atom('A.116.CA').pos(), 0.5, {cap:true, color:'red'});
+      //var cm = viewer.customMesh('interaction');
+      //cm.addTube( structure.atom('A.95.CA').pos(), structure.atom('A.116.CA').pos(), 0.5, {cap:true, color:'red'});
 
-      viewer.rm('interaction');
+      //viewer.rm('interaction');
   });
 }
 
