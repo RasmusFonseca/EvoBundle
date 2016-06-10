@@ -110,7 +110,7 @@ section{
 // override the default options with something less restrictive.
 var options = {
   width: 800,
-  height: 500,
+  height: 400,
   antialias: true,
   quality : 'medium'
 };
@@ -124,12 +124,13 @@ function loadMOR() {
   // from the server and display it in the viewer.
   pv.io.fetchPdb('5c1m.pdb', function(structure) {
       struc = structure;
-      viewer.cartoon('protein', structure, { color : color.ssSuccession() });
+      viewer.trace('protein', structure, { color : color.ssSuccession() });
       var ligands = structure.select({ rnames : ['YCM', '4VO', 'OLC', 'CLR', 'P04', 'P6G'] });
       viewer.ballsAndSticks('ligands', ligands);
       var rotation = pv.viewpoint.principalAxes(viewer.all()[0]);
       viewer.setRotation(rotation)
       viewer.fitTo(structure);
+      viewer.autoZoom();
 
       //var randAtom = structure.atom('A.95.CA');
       //var options = { fontSize : 16, fontColor: '#aee', backgroundAlpha:0.8  };

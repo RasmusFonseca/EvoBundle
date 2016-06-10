@@ -338,6 +338,7 @@ function toggleNode(d,i){
     });
 
   //svg.selectAll("path.link/target-"+d.key);
+  fireTickListeners(curFrame);
 }
 
 function mouse(e) {
