@@ -350,7 +350,7 @@ function mouseoutNode(d) {
 
 function updateNodes(name, value) {
   return function(d) {
-    if (value) this.parentNode.appendChild(this);
+    //if (value) this.parentNode.appendChild(this);
     svg.select("#node-" + d[name].key).classed(name, value);
   };
 }
