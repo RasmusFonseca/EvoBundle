@@ -116,34 +116,35 @@ var options = {
 };
 // insert the viewer under the Dom element with id 'gl'.
 var viewer = pv.Viewer(document.getElementById('pviewer'), options);
+//var cm = viewer.customMesh("interactions");
 
 
-function loadMethylTransferase() {
+function loadMOR() {
   // asynchronously load the PDB file for the dengue methyl transferase
   // from the server and display it in the viewer.
   pv.io.fetchPdb('5c1m.pdb', function(structure) {
       viewer.trace('protein', structure, { color : color.ssSuccession() });
       var ligands = structure.select({ rnames : ['YCM', '4VO', 'OLC', 'CLR', 'P04', 'P6G'] });
       viewer.ballsAndSticks('ligands', ligands);
-      //viewer.setRotation([0,0,-1,0,1,0,1,0,0]);
       var rotation = pv.viewpoint.principalAxes(viewer.all()[0]);
       viewer.setRotation(rotation)
-      //viewer.autoZoom();
       viewer.fitTo(structure);
+
       //var randAtom = structure.atom('A.95.CA');
       //var options = { fontSize : 16, fontColor: '#aee', backgroundAlpha:0.8  };
       //viewer.label('label', randAtom.qualifiedName(), randAtom.pos(), options);
 
       //var cm = viewer.customMesh('interaction');
-      //cm.addTube( structure.atom('A.95.CA').pos(), structure.atom('A.116.CA').pos(), 0.5, {cap:true, color:'red'});
+      //cm.addTube( structure.atom('A.95.CA').pos(), structure.atom('A.116.CA').pos(), 0.5, {cap:false, color:'black'});
 
-      //viewer.rm('interaction');
+      viewer.rm('interaction');
+      //cm.addTube( structure.atom('A.95.CA').pos(), structure.atom('A.116.CA').pos(), 0.5, {cap:false, color:'black'});
   });
 }
 
 // load the methyl transferase once the DOM has finished loading. That's
 // the earliest point the WebGL context is available.
-document.addEventListener('DOMContentLoaded', loadMethylTransferase);
+document.addEventListener('DOMContentLoaded', loadMOR);
 </script>
     </section>
 
@@ -164,6 +165,19 @@ document.addEventListener('DOMContentLoaded', loadMethylTransferase);
 d3.text("../mor-active-rep1-wb.json", function(rawtext){
   load_dataset(rawtext);
 });
+      </script>
+      <script>
+function updateInteractions(frame){
+  viewer.rm('interactions');
+  var cm = viewer.customMesh('interactions');
+  
+  links[frame].forEach(function(d){
+    var resi1 = d.name1.substring(d.name1.lastIndexOf(".")+1, d.name1.lastIndexOf("x"));
+    var resi1 = d.name1.substring(d.name1.lastIndexOf(".")+1, d.name1.lastIndexOf("x"));
+  });
+
+}
+tickListeners.push(updateInteractions);
       </script>
     </section>
 

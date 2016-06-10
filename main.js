@@ -140,7 +140,8 @@ function create_bundle(rawText) {
 
   d3.select("input[id=timeRange]")
     .attr("max", links.length-1)
-    .on("input", function(){setFrame(this.value);} );
+    .on("input", function(){fireTickListeners(this.value);} );
+    //.on("input", function(){setFrame(this.value);} );
 //    .on("input", function() {
 //      timeStep = this.value;
 //      d3.select("span[id=timeLabel]")
@@ -229,8 +230,12 @@ function create_bundle(rawText) {
 
 var playing = false;
 var frameskip = 10;
+var curFrame = 0;
+
+
 
 function setFrame(frame){
+  curFrame = frame;
   d3.select("span[id=timeLabel]")
     .text(""+frame);
 
@@ -259,13 +264,23 @@ function setFrame(frame){
 
 }
 
+var tickListeners = [];
+tickListeners[0] = setFrame;
+
+function fireTickListeners(frame){
+  for(var i=0;i<tickListeners.length;i++){
+    tickListeners[i](frame); 
+  }
+}
+
 function playTick(){
   var timeRange = d3.select("input[id=timeRange]");
   var curValue = parseInt(timeRange[0][0].value);
   if(playing && curValue+frameskip<links.length-1) {
     var skip = Math.min(frameskip, links.length-1-frameskip);
     timeRange[0][0].value = curValue+skip;
-    setFrame(curValue+skip);
+    fireTickListeners(curValue+skip);
+    //setFrame(curValue+skip);
 
     setTimeout(playTick, 50);
   }else{
@@ -289,7 +304,8 @@ function reverse(){
   var timeRange = d3.select("input[id=timeRange]");
   var minVal = timeRange.attr("min");
   timeRange[0][0].value = minVal;
-  setFrame(minVal);
+  fireTickListeners(minVal);
+  //setFrame(minVal);
 }
 
 function forward(){
@@ -297,7 +313,8 @@ function forward(){
   var timeRange = d3.select("input[id=timeRange]");
   var maxVal = timeRange.attr("max");
   timeRange[0][0].value = maxVal;
-  setFrame(maxVal);
+  fireTickListeners(maxVal);
+  //setFrame(maxVal);
 }
 
 
