@@ -14,10 +14,12 @@ var w = 800,
     rotate = 0;
 
 //var stdEdgeColor = "#1f77b4";
-var stdEdgeColor = "#AAA";
+var stdEdgeColor = "#000";
 var stdEdgeWidth = 2;
 
 var svg, div, buttons, bundle, line, nodes, splines, links;
+
+var toggledNodes = {};
 
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
@@ -86,7 +88,12 @@ function create_bundle(rawText) {
   var path = svg.selectAll("path.link")
     .data(links[0])
     .enter().append("svg:path")
-      .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+      .attr("class", function(d) { 
+        var ret = "link source-" + d.source.key + " target-" + d.target.key; 
+        if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+          ret+=" toggled";
+        return ret;
+      })
       .style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
       .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
       .attr("d", function(d, i) { return line(splines[i]); });
@@ -232,9 +239,21 @@ function setFrame(frame){
     .data(links[frame]);//, function(d){ return {source:d.source, target:d.target}; });
   path.exit().remove();
   path.enter().append("svg:path")
-    .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
+    .attr("class", function(d) { 
+      var ret = "link source-" + d.source.key + " target-" + d.target.key; 
+      if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+        ret+=" toggled";
+      return ret;
+    });
+    //.attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
   path.style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
-    .attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
+    .attr("class", function(d) { 
+      var ret = "link source-" + d.source.key + " target-" + d.target.key; 
+      if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+        ret+=" toggled";
+      return ret;
+    })
+    //.attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
     .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
     .attr("d", function(d, i) { return line(splines[i]); });
 
@@ -287,7 +306,12 @@ function toggleNode(d,i){
   d3.select(this.parentNode)
     .attr("class", function(){return toggled?"node":"toggledNode"; }); 
 
-  //svg.selectAll("path.link/target-"+d.key);
+  var name = d.name.substring(d.name.lastIndexOf(".")+1);
+  if(toggled)
+    delete toggledNodes[name];
+  else
+    toggledNodes[name] = "";
+
 }
 
 function mouse(e) {
@@ -327,6 +351,7 @@ function mouseup() {
         .attr("transform", function(d) { return (d.x + rotate) % 360 < 180 ? null : "rotate(180)"; });
   }
 }
+
 
 function mouseoverNode(d) {
   svg.selectAll("path.link.target-" + d.key)
