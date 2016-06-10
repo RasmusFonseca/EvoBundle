@@ -33,15 +33,14 @@ path.arc {
 
 .link {
   fill: none;
-  stroke: #AAA;
-  stroke-opacity: .4;
+  stroke: #000;
+  stroke-opacity: .1;
   stroke-width: 2.0;
   pointer-events: none;
 }
 
 .link.source, .link.target {
   stroke-opacity: 1;
-  stroke-width: 2px;
 }
 
 .node.target {
@@ -58,6 +57,10 @@ path.arc {
 
 .link.target {
   stroke: #2ca02c;
+}
+
+.link.toggled{
+  stroke-opacity: 1;
 }
 
 svg text {
