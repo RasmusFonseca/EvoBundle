@@ -1,10 +1,6 @@
 // make dataset globally available
 var dz;
 
-// load dataset and create table
-function load_dataset(json) {
-  create_bundle(json);
-}
 
 var w = 800,
     h = 800,
