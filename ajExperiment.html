@@ -140,19 +140,21 @@ section{
       <p id="stats"></p>
       <script src="main.js"></script>
       <script>
-upload_button("uploader", load_dataset);
-
-function loadExample(fileName){
+// load dataset and create table
+function load_dataset(json) {
   d3.select("section.main-content").style("display", "block");
   d3.select("section.main-upload").style("display", "none");
+  create_bundle(json);
+}
+
+function loadExample(fileName){
   d3.text(fileName, function(rawtext){
     load_dataset(rawtext);
   });
 }
-//d3.text("mor-active-rep1-wb.json", function(rawtext){
-//d3.text("top7_processed.json", function(rawtext){
-//  load_dataset(rawtext);
-//});
+
+upload_button("uploader", load_dataset);
+
       </script>
     </section>
 
