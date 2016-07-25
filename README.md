@@ -1,8 +1,8 @@
-= Time-evolving bundle plots =
+# Time-evolving bundle plots 
 
 Bundle-plots illustrate contacts between grouped nodes and are useful for exploring interaction graphs. We have added a time-slider to illustrate the evolution of dynamically changing networks, and added circular layers of color-coded annotations.
 
-== Input format ==
+## Input format
 The input is a JSON-file that could look like the following:
 
 ```json
@@ -24,7 +24,7 @@ The input-json can contain three sections
  * nodes - a list of node property-definitions
  * defaults - an object that specifies default properties
 
-=== Interactions ===
+### Interactions
 This section has the format
 ```json
   "interactions":[
@@ -36,7 +36,7 @@ The fields `name1`, `name2`, and `frames` are mandatory but the others are not. 
 
 The edge-width is measured in pixels. 
 
-===Nodes===
+### Nodes
 This section has the format
 ```json
   "nodes":[
@@ -51,7 +51,7 @@ Siblings are sorted according to the last integer in their name.
 
 The `color` field is non-mandatory and indicates the color of the wedge just outside the node label.
 
-===Defaults===
+### Defaults
 This section has the format
 ```json
   "defaults":{"color":<string>, "width":<int>}
