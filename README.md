@@ -56,4 +56,4 @@ This section has the format
 ```json
   "defaults":{"color":<string>, "width":<int>}
 ```
-where none of the fields are mandatory, but if specified they set edge-defaults.
+where none of the fields are mandatory, but if specified they set edge-defaults. When a node is selected, the adjacent interactions are highlighted by removing the transparency. The default color should therefore ideally have a bit of transparency, which can be specified using e.g. `rgba(255,0,0,100)`. 
