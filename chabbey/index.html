@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <meta charset="UTF-8">
+    <title>EvoBundle</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <!--<link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">-->
+
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+    <!--<link type="text/css" rel="stylesheet" href="style.css"/>-->
+    <style type="text/css">
+
+        path.arc {
+            cursor: move;
+            fill: #fff;
+        }
+
+        .node {
+            font-size: 10px;
+            fill:#888;
+            cursor: pointer;
+        }
+
+        .node:hover {
+            fill: #1f77b4;
+        }
+
+        .toggledNode{
+            font-size: 10px;
+            fill: "black";
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .1;
+            stroke-width: 2.0;
+            pointer-events: none;
+        }
+
+        .link.source, .link.target {
+            stroke-opacity: 1;
+        }
+
+        .node.target {
+            font-weight: bold;
+        }
+
+        .link.source {
+            stroke: #2ca02c;
+        }
+
+        .link.target {
+            stroke: #2ca02c;
+        }
+
+        .link.toggled{
+            stroke-opacity: 1;
+        }
+
+        .node.source {
+            font-weight: bold;
+        }
+
+
+        svg text {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        svg text::selection {
+            background: none;
+        }
+
+        body{
+            margin:20px;
+        }
+
+        section{
+            width:900px;
+            margin:auto;
+        }
+
+        .center {
+            width:50%;
+            height:50%;
+            margin: auto
+        }
+
+        .center > img {
+            width:100%
+        }
+
+        .title {
+            text-align: center;
+        }
+
+
+        .matrix .background {
+            fill: #eee;
+        }
+
+        .matrix line {
+            stroke: #fff;
+        }
+
+        .matrix text.active {
+            fill: red;
+        }
+
+
+    </style>
+
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="main2.js"></script>
+    <script type="text/javascript" src="parse.js"></script>
+</head>
+<h1 class="title"> Bundle plots </h1>
+
+
+<div class="center">
+    Lorem ipsum est quid patria. Stat dolrem est AJ quois patria la sciencie porque a la playa. SIC!
+    Si. Senor Zorro est un molto cerve
+    Ad hoc him hominem non. Mater est filium tun quouque. Brutus mi fili, toi quoque. Ad astra per
+    asperum quod est non nunc tum est proutum sic as los clodos.
+</div>
+<div id="dropbox" class="center">
+    <img src="bundleThumb.png">
+</div>
+
+
+<section class="main-content" style="display:none">
+
+    <div id="evobundlediv">
+        <div style="width:280px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
+        <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
+            <span  id="controls"></span>
+            <input id="timeRange" type="range" min="0" max="1000" value="0" />
+            <span id="timeLabel">0</span>
+        </div>
+    </div>
+</section>
+
+
+
+</html>
