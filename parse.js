@@ -22,8 +22,8 @@ function parse(graph){
       addToMap(n.name, n);
     });
 
-  //Ensure that graph.nodes and nodeMap contains all node names mentioned in graph.interactions
-  graph.interactions
+  //Ensure that graph.nodes and nodeMap contains all node names mentioned in graph.edges
+  graph.edges
     .forEach(function(edge){
       if(!(edge.name1 in nodeMap)){
         var newNode = {name:edge.name1};
@@ -39,10 +39,10 @@ function parse(graph){
 
   graph.treeRoot = nodeMap[""];
 
-  //Go through graph.interactions and convert name1, name2, and frames to target and source object arrays
+  //Go through graph.edges and convert name1, name2, and frames to target and source object arrays
   graph.frames = [];
 
-  graph.interactions
+  graph.edges
     .forEach(function(edge,i){
       //Set source and target of edge
       edge.source = nodeMap[edge.name1];
@@ -57,7 +57,7 @@ function parse(graph){
       });
     });
 
-  console.log(graph.interactions);
+  console.log(graph.edges);
 
   return graph;
 }

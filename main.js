@@ -76,9 +76,12 @@ function create_bundle(rawText) {
   var json = JSON.parse(rawText);
   var graph = parse(json);
 
+  stdEdgeColor = json.defaults.color;
+  stdEdgeWidth = json.defaults.width;
   nodes = cluster.nodes(graph.treeRoot);
   links = graph.frames,
   splines = bundle(links[0]);
+
 
 
   var path = svg.selectAll("path.link")
@@ -106,8 +109,8 @@ function create_bundle(rawText) {
       .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
       .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
       .text(function(d) { return d.key; })
-      .on("mouseover", mouseoverNode)
-      .on("mouseout", mouseoutNode)
+      //.on("mouseover", mouseoverNode)
+      //.on("mouseout", mouseoutNode)
       .on("click", toggleNode);
 
   var arcWidth = 300.0/graph.nodes.length;
