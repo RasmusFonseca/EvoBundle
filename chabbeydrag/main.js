@@ -20,7 +20,15 @@ var toggledNodes = {};
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
 
-  var cluster = d3.layout.cluster()
+    var tree = d3.layout.tree()
+        .size([800, 800]);
+    var diagonal = d3.svg.diagonal()
+        .projection(function (d) {
+            return [d.y, d.x];
+        });
+
+
+    var cluster = d3.layout.cluster()
       .size([360, ry - 120])
       .sort(function(a, b) { 
         
@@ -78,6 +86,9 @@ function create_bundle(rawText) {
   //var classes = d3.csv.parseRows(rawText)
   //  .map(function(d){return {rawArr:d}; });
   var json = JSON.parse(rawText);
+
+    console.log(json);
+    debugger;
   graph = parse(json);
 
 
@@ -92,7 +103,7 @@ function create_bundle(rawText) {
   links = graph.frames,
   splines = bundle(links[0]);
    console.log(graph);
-
+    console.log(splines);
 
 
   var path = svg.selectAll("path.link")
@@ -231,7 +242,7 @@ function create_bundle(rawText) {
                 var newMatrix = "rotate(" + (d.x ) + ")";
                 return d3.interpolateString(oldMatrix, newMatrix);
             });
-    }, 1000);
+    }, 500);
 
 
     // rotate one node
@@ -386,6 +397,36 @@ function create_bundle(rawText) {
     .style("width",cw+"px")
     .style("line-height", ch+"px")
     .style("height", ch+"px");
+
+
+    setTimeout(transitionToTree, 5000);
+
+    function transitionToTree() {
+        var _nodes = tree.nodes(graph.treeRoot), //recalculate layout
+            _links = tree.links(_nodes);
+        console.log(_nodes);
+
+        var x = 0, y = 0;
+
+        svg.transition().duration(1000)
+            .attr("transform", "translate(" + x + "," + y + ")rotate(" + 0 + ")");
+
+
+        path.data(_links)
+            .transition()
+            .duration(1000)
+            .style("stroke", "#e78ac3")
+            .attr("d", diagonal); // get the new tree path
+
+
+        svg.selectAll("g.node")
+            .data(_nodes.filter(function(n) { return !n.children; }))
+            .attr("transform", function(d) { return "translate(" + (d.y )+ ", " + + (d.x ) + ")" })
+
+
+
+    }
+
 }
 
 var playing = false;
