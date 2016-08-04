@@ -88,7 +88,6 @@ function create_bundle(rawText) {
   var json = JSON.parse(rawText);
 
     console.log(json);
-    debugger;
   graph = parse(json);
 
 
