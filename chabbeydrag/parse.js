@@ -2,11 +2,17 @@
 function parse(graph){
   var nodeMap = {};
 
+
+  // that is not immediay obvious !!
   function addToMap(name, data) {
     var node = nodeMap[name], i;
+
+    //
     if (!node) {
       node = nodeMap[name] = data || {name: name, children: []};
       if (name.length) {
+        console.log('will add ',name.substring(0, name.lastIndexOf(".")));
+
         node.parent = addToMap(name.substring(0, i = name.lastIndexOf(".")));
         node.parent.children.push(node);
         node.key = name.substring(i + 1);
@@ -16,14 +22,18 @@ function parse(graph){
   };
 
   //Build parents of nodes and add all tree-vertices to nodeMap
-  if( !("nodes" in graph) ) graph.nodes = []; 
+  if( !("nodes" in graph) ) graph.nodes = [];
+
   graph.nodes
     .forEach(function(n){
       addToMap(n.name, n);
     });
 
+  // we should use some graph object
+  graph.nodeMap = nodeMap;
+
   //Ensure that graph.nodes and nodeMap contains all node names mentioned in graph.interactions
-  graph.interactions
+  graph.edges
     .forEach(function(edge){
       if(!(edge.name1 in nodeMap)){
         var newNode = {name:edge.name1};
@@ -42,7 +52,7 @@ function parse(graph){
   //Go through graph.interactions and convert name1, name2, and frames to target and source object arrays
   graph.frames = [];
 
-  graph.interactions
+  graph.edges
     .forEach(function(edge,i){
       //Set source and target of edge
       edge.source = nodeMap[edge.name1];
@@ -57,7 +67,7 @@ function parse(graph){
       });
     });
 
-  console.log(graph.interactions);
+  console.log(graph.edges);
 
   return graph;
 }

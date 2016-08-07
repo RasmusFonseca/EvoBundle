@@ -1,3 +1,10 @@
+
+
+
+
+
+
+
 // make dataset globally available
 var dz;
 
@@ -17,7 +24,101 @@ var svg, div, buttons, bundle, line, nodes, splines, links, graph;
 
 var toggledNodes = {};
 
-// create a table with column headers, types, and data
+
+
+
+
+
+// note that in d3 v4.0, the diagonal generator
+// so you have to use path with cubic bezier
+// for a tidy tree layout
+/*
+ return "M" + d.y + "," + d.x
+ + "C" + (d.y + d.parent.y) / 2 + "," + d.x
+ + " " + (d.y + d.parent.y) / 2 + "," + d.parent.x
+ + " " + d.parent.y + "," + d.parent.x;
+ */
+
+// for a dendogram layout
+/*
+ return "M" + d.y + "," + d.x
+ + "C" + (d.parent.y + 100) + "," + d.x
+ + " " + (d.parent.y + 100) + "," + d.parent.x
+ + " " + d.parent.y + "," + d.parent.x;
+ */
+// see https://github.com/d3/d3-shape/issues/27
+// i dunno why, i just looked at mike example
+
+
+//from D3 cluster layout produces nodes that
+/*parent - the parent node, or null for the root.
+    children - the array of child nodes, or null for leaf nodes.
+    depth - the depth of the node, starting at 0 for the root.
+    x - the computed x-coordinate of the node position.
+    y - the computed y-coordinate of the node position.
+*
+* Note that you need a 'children' attributes in your data
+*
+* /
+/*
+  And links that have this properties
+
+ */
+
+
+/**
+ *
+ * @param clusterDefinition {}
+ *
+ * keys are the key of the cluster
+ * values are array that correspond to node keys
+ *
+ */
+function assignCluster(clusterDefinition, graph) {
+    //this function supposes a non-clustered tree with a simple structure (we take only the nodes)
+    // suppose we have alreay a tree, we have to filter all nodes that have children( quick and dirty fix )
+
+    var keys = Object.keys(clusterDefinition);
+    var tempNodes = [];
+    var nodesMap = graph.nodeMap;
+    var root = nodesMap[""];
+    root.children = [];
+    keys.forEach(function(clusterKey){
+        var nodesArray = clusterDefinition[clusterKey];
+        var clusterNode = {
+            key: clusterKey,
+            name: clusterKey,
+            children: [],
+            parent: root,
+            clusterName: clusterKey,
+        };
+        root.children.push(clusterNode);
+        nodesMap[clusterKey] = clusterNode;
+        tempNodes.push(clusterNode);
+        nodesArray.forEach(function(node){
+            node.oldX = node.x;
+            node.parent = clusterNode;
+            node.clusterKey = clusterKey;
+            tempNodes.push(node);
+            clusterNode.children.push(node);
+        });
+        // for legend, we can map the names of the cluster with an ordinal scale, iterates over it
+        // and we are done with the legend part
+
+        
+    });
+    graph.nodes = tempNodes;
+
+    // A   => ROOT
+    // 1  2  3 => CLUSTERS
+    // . . . . . . . . . => NODES
+    // once this is done, we use a pass thru the cluster and bundle layout
+    // bundle layout is ok for transition
+    // cluster layout.. i do not think so
+}
+
+
+
 function create_bundle(rawText) {
 
     var tree = d3.layout.tree()
@@ -27,6 +128,7 @@ function create_bundle(rawText) {
             return [d.y, d.x];
         });
 
+// comment un passe un arbre, on a la garantie que la hierarchie soit correctement triee
 
     var cluster = d3.layout.cluster()
       .size([360, ry - 120])
@@ -34,6 +136,7 @@ function create_bundle(rawText) {
         
         var aRes = a.key.match(/[0-9]*$/);
         var bRes = b.key.match(/[0-9]*$/);
+            //["28", index: 2, input: "1x28"] ["60", index: 2, input: "1x60"]
         if(aRes.length==0 || bRes.length==0){
           aRes = a.key;
           bRes = b.key;
@@ -41,13 +144,18 @@ function create_bundle(rawText) {
           aRes = parseInt(aRes[0]);
           bRes = parseInt(bRes[0]);
         }
-        return d3.ascending(aRes, bRes); });
+        return d3.ascending(aRes, bRes); }
+    );
 
 
     // ok bundle simply computes the 'right' path... so if we update the x and y , everything should be right ?
     // as they are used to compute the splines
 
+    // so now... why have we got 'node with link the itself'.. that's what the bundler imply
+
   bundle = d3.layout.bundle();
+
+    var table = d3.select('body').append('table');
 
   line = d3.svg.line.radial()
       .interpolate("bundle")
@@ -86,10 +194,8 @@ function create_bundle(rawText) {
   //var classes = d3.csv.parseRows(rawText)
   //  .map(function(d){return {rawArr:d}; });
   var json = JSON.parse(rawText);
-
-    console.log(json);
   graph = parse(json);
-
+    console.log(graph);
 
     // Frames is a bit strange, as we have an array of 'ALL FRAMES'
     // and in agiven frame their re-occurence
@@ -99,10 +205,60 @@ function create_bundle(rawText) {
     // cluster has x and y properties, plus parent and children properties
 
 
-  links = graph.frames,
-  splines = bundle(links[0]);
-   console.log(graph);
-    console.log(splines);
+    links = graph.frames,
+    splines = bundle(links[0]);
+
+
+    setInterval(function() {
+
+        var newCluster = randomizeClustering(4);
+        assignCluster(newCluster, graph);
+
+        // brute-force approach, there may be an incremental way to do it
+        links = graph.frames,
+            splines = bundle(links[0]);
+        nodes = cluster.nodes(graph.treeRoot);
+        path.transition().attr("d",
+            function(d, i) {
+                return line(splines[i]);
+            })
+            .duration(900);
+
+
+         var tr = table.selectAll("tr")
+            .data(Object.keys(newCluster));
+        tr.enter().append('tr');
+
+         var td = tr.selectAll("td")
+            .data(function(d, i) { return newCluster[d]; });
+        td.enter().append('td').html(function(d) { return d.name});
+        td.exit().remove();
+
+
+        // why if i forget the key function, everything get messed
+        svg.selectAll("g.node")
+            .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key})
+            .transition().duration(900)
+            .attrTween("transform", function(d) {
+
+                var oldMatrix = "rotate(" + (d.oldX - 90) + ")translate(" + d.y + ")";
+                console.log(oldMatrix, d.key);
+                var newMatrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
+                return d3.interpolateString(oldMatrix, newMatrix);
+            });
+
+
+    }, 2000);
+
+    /*
+    var newCluster = randomizeClustering(4);
+    assignCluster(newCluster, graph);
+    console.log(graph.treeRoot);
+    nodes = cluster.nodes(graph.treeRoot);
+    */
+
+
+// NOTE THAT graph.nodes does not include the root
 
 
   var path = svg.selectAll("path.link")
@@ -136,13 +292,16 @@ function create_bundle(rawText) {
               return 0;*/
 
       }), function(d) {
-          console.log(d.key);
           return d.key;
       })
     .enter().append("svg:g")
       .attr("class", "node")
       .attr("id", function(d) { return "node-" + d.key; })
-      .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+      .attr("transform", function(d) {
+          var matrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"
+              console.log('FIRST PASS', matrix, d.key);
+          return matrix;
+      })
     .append("svg:text")
       .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
       .attr("dy", ".31em")
@@ -205,6 +364,7 @@ function create_bundle(rawText) {
     // one way of doing it, this is acceptable, as long as we move 'all' the stuff
     // but what if we move two nodes indepently
     setTimeout(function() {
+        return;
         console.log('move');
         nodes.forEach(function(node){
             node.oldX = node.x; // there must be a better way
@@ -246,6 +406,7 @@ function create_bundle(rawText) {
 
     // rotate one node
     setTimeout(function(){
+        return
         nodes.forEach(function(node){
             node.delta = Math.random() * 150;
             node.oldX = node.x;
@@ -401,6 +562,7 @@ function create_bundle(rawText) {
     setTimeout(transitionToTree, 5000);
 
     function transitionToTree() {
+        return;
         var _nodes = tree.nodes(graph.treeRoot), //recalculate layout
             _links = tree.links(_nodes);
         console.log(_nodes);
@@ -632,5 +794,25 @@ function upload_button(el, callback) {
     d3.select("#table").text("loading...");
     var file = this.files[0];
     reader.readAsText(file);
-  };
-};
+  }
+}
+
+function randomizeClustering(numberOfClusters) {
+
+    var KEY = "CLUSTER";
+    var clusters = {};
+    for (var i = 0; i < numberOfClusters; i++){
+        clusters[KEY + i] = [];
+    }
+
+    // assume node have no children;
+    // i'd like to find some kind of 'good' distribution. but it's only for demo purpose;
+    graph.nodes.forEach(function(node){
+        if (node.children) {
+            return true;
+        }
+        var key =  KEY + Math.floor(Math.random()*4);
+        clusters[key].push(node);
+    });
+    return clusters;
+}
