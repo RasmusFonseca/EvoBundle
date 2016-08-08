@@ -206,7 +206,7 @@ function create_bundle(rawText) {
 }
 
 var playing = false;
-var frameskip = 10;
+var frameskip = 1;
 var curFrame = 0;
 
 
