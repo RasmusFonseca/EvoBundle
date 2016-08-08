@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en-us">
-  <head>
+<head>
     <meta charset="UTF-8">
     <title>EvoBundle</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -11,87 +11,88 @@
 
     <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <!--<link type="text/css" rel="stylesheet" href="style.css"/>-->
-<style type="text/css">
+    <style type="text/css">
 
-path.arc {
-  cursor: move;
-  fill: #fff;
-}
+        path.arc {
+            cursor: move;
+            fill: #fff;
+        }
 
-.node {
-  font-size: 10px;
-  fill:#888;
-  cursor: pointer;
-}
+        .node {
+            font-size: 10px;
+            fill:#888;
+            cursor: pointer;
+        }
 
-.node:hover {
-  fill: #1f77b4;
-}
+        .node:hover {
+            fill: #1f77b4;
+        }
 
-.toggledNode{
-  font-size: 10px;
-  fill: "black";
-  font-weight: bold;
-  cursor: pointer;
-}
+        .toggledNode{
+            font-size: 10px;
+            fill: "black";
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-.link {
-  fill: none;
-  stroke: #000;
-  stroke-opacity: .1;
-  stroke-width: 2.0;
-  pointer-events: none;
-}
+        .link {
+            fill: none;
+            stroke: #000;
+            stroke-opacity: .1;
+            stroke-width: 2.0;
+            pointer-events: none;
+        }
 
-.link.source, .link.target {
-  stroke-opacity: 1;
-}
+        .link.source, .link.target {
+            stroke-opacity: 1;
+        }
 
-.node.target {
-  font-weight: bold;
-}
+        .node.target {
+            font-weight: bold;
+        }
 
-.link.source {
-  stroke: #2ca02c;
-}
+        .link.source {
+            stroke: #2ca02c;
+        }
 
-.link.target {
-  stroke: #2ca02c;
-}
+        .link.target {
+            stroke: #2ca02c;
+        }
 
-.link.toggled{
-  stroke-opacity: 1;
-}
+        .link.toggled{
+            stroke-opacity: 1;
+        }
 
-.node.source {
-  font-weight: bold;
-}
+        .node.source {
+            font-weight: bold;
+        }
 
 
-svg text {
-    -webkit-user-select: none;
-       -moz-user-select: none;
-        -ms-user-select: none;
+        svg text {
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
             user-select: none;
-}
-svg text::selection {
-    background: none;
-}
+        }
+        svg text::selection {
+            background: none;
+        }
 
-body{
-  margin:20px;
-}
+        body{
+            margin:20px;
+        }
 
-section{
-  width:900px;
-}
+        section{
+            width:900px;
+        }
 
     </style>
 
-      <script src="http://d3js.org/d3.v3.min.js"></script>
-      <script type="text/javascript" src="parse.js"></script>
-  </head>
-  <body>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="parse.js"></script>
+    <script type="text/javascript" src="summaryAvgWeight.js"></script>
+</head>
+<body>
 <!--
     <section class="page-header">
       <h1 class="project-name">Evobundle</h1>
@@ -102,18 +103,18 @@ section{
     </section>
 -->
 
-    <section class="main-upload">
-      <h1>Time-evolving bundle plots</h1>
-      <p>
-      <a href="https://bl.ocks.org/mbostock/7607999"><img src="bundleThumb.png" align="left" width="100px"></a>
-      Bundle-plots illustrate contacts between grouped nodes and are useful for
-      exploring interaction graphs. We have added a time-slider to illustrate
-      the evolution of dynamically changing networks, and added circular layers
-      of color-coded annotations.
-      </p>
-      <p>
-      The input is a JSON-file with the following format:
-      <pre>
+<section class="main-upload">
+    <h1>Time-evolving bundle plots</h1>
+    <p>
+        <a href="https://bl.ocks.org/mbostock/7607999"><img src="bundleThumb.png" align="left" width="100px"></a>
+        Bundle-plots illustrate contacts between grouped nodes and are useful for
+        exploring interaction graphs. We have added a time-slider to illustrate
+        the evolution of dynamically changing networks, and added circular layers
+        of color-coded annotations.
+    </p>
+    <p>
+        The input is a JSON-file with the following format:
+    <pre>
 {
   "edges":[
     {
@@ -125,53 +126,54 @@ section{
   ]
 }
       </pre>
-      Here TM3.ARG135 and TM3.ASP134 interacts at times 0 to 4 and 6 to 9.
-      Dot-separated names will be used to cluster vertices and can affect
-      sorting.</p>
-      <p>Try for example:
-      <ul>
+    Here TM3.ARG135 and TM3.ASP134 interacts at times 0 to 4 and 6 to 9.
+    Dot-separated names will be used to cluster vertices and can affect
+    sorting.</p>
+    <p>Try for example:
+    <ul>
         <li><a href="javascript:loadExample('real_example-salt_bridges.json')">example-salt_bridges.json</a> [1.7MB, <a href="real_example-salt_bridges.json">raw</a>]</li>
         <li><a href="javascript:loadExample('mor-active-rep1-wb.json')">mor-active-rep1-wb.json</a> [14MB, <a href="mor-active-rep1-wb.json">raw</a>].</li>
         <li><a href="javascript:loadExample('top7_processed.json')">top7_processed.json</a> [50MB, <a href="top7_processed.json">raw</a>].</li>
-      </ul>
-      or upload your own ...
-      </p>
-      <input type="file" id="uploader">
-      <p id="stats"></p>
-      <script src="main.js"></script>
-      <script>
-// load dataset and create table
-function load_dataset(json) {
-  d3.select("section.main-content").style("display", "block");
-  d3.select("section.main-upload").style("display", "none");
-  create_bundle(json);
-}
+    </ul>
+    or upload your own ...
+    </p>
+    <input type="file" id="uploader">
+    <p id="stats"></p>
+    <script src="main.js"></script>
+    <script>
+        // load dataset and create table
+        function load_dataset(json) {
+            d3.select("section.main-content").style("display", "block");
+            d3.select("section.main-upload").style("display", "none");
+            create_bundle(json);
+        }
 
-function loadExample(fileName){
-  d3.text(fileName, function(rawtext){
-    load_dataset(rawtext);
-  });
-}
+        function loadExample(fileName){
+            d3.text(fileName, function(rawtext){
+                load_dataset(rawtext);
+            });
+        }
 
-upload_button("uploader", load_dataset);
+        upload_button("uploader", load_dataset);
 
-      </script>
-    </section>
+    </script>
+</section>
 
-    <section class="main-content" style="display:none">
+<section class="main-content" style="display:none">
 
-      <div id="evobundlediv">
+    <div id="evobundlediv">
         <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
         <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
-          <span  id="controls"></span>
-          <input id="timeRange" type="range" min="0" max="1000" value="0" />
-          <span id="timeLabel">0</span>
+            <span  id="controls"></span>
+            <input id="timeRange" type="range" min="0" max="1000" value="0" />
+            <span id="timeLabel">0</span>
         </div>
-      </div>
-      
+        <a href="javascript:avgInteractionSummary(graph)">Average interaction strength</a>
+    </div>
 
-    </section>
 
-  
-  </body>
+</section>
+
+
+</body>
 </html>
