@@ -1,10 +1,5 @@
 
 
-
-
-
-
-
 // make dataset globally available
 var dz;
 
@@ -26,7 +21,19 @@ var toggledNodes = {};
 
 
 
+var c10 = d3.scale.category10();
+// generate domain dynamically
+c10.domain = ["NOCLUSTER", "CLUSTER0", "CLUSTER1", "CLUSTER2", "CLUSTER3", "CLUSTER4", "CLUSTER5", "CLUSTER6"];
 
+
+var clusterIndex = 0;
+var clusterText = [
+    'These datas are not clustered.. bla bla bla',
+    'This clustering has been using the Dustin-Richards algorithm, which itself rely on the Mitchell conjunction to ensure a smooth distribtuon of probabilites in the space-time continuum',
+    'This clustering has been painstakingly designed by our engineers, etc... etc...'
+];
+
+var originalKeys;
 
 
 // note that in d3 v4.0, the diagonal generator
@@ -75,8 +82,8 @@ var toggledNodes = {};
  *
  */
 function assignCluster(clusterDefinition, graph) {
-    //this function supposes a non-clustered tree with a simple structure (we take only the nodes)
-    // suppose we have alreay a tree, we have to filter all nodes that have children( quick and dirty fix )
+
+
 
     var keys = Object.keys(clusterDefinition);
     var tempNodes = [];
@@ -85,13 +92,24 @@ function assignCluster(clusterDefinition, graph) {
     root.children = [];
     keys.forEach(function(clusterKey){
         var nodesArray = clusterDefinition[clusterKey];
-        var clusterNode = {
-            key: clusterKey,
-            name: clusterKey,
-            children: [],
-            parent: root,
-            clusterName: clusterKey,
-        };
+        var clusterNode;
+
+        // if a cluster node already exist, we take it into account, but reset its children
+        if   (nodesMap[clusterKey]) {
+            clusterNode = nodesMap[clusterKey];
+            clusterNode.children = [];
+            clusterNode.oldX = clusterNode.x;
+            clusterNode.oldY = clusterNode.y;
+        } else
+        {
+            clusterNode = {
+                key: clusterKey,
+                name: clusterKey,
+                children: [],
+                parent: root,
+                clusterName: clusterKey
+            };
+        }
         root.children.push(clusterNode);
         nodesMap[clusterKey] = clusterNode;
         tempNodes.push(clusterNode);
@@ -104,8 +122,6 @@ function assignCluster(clusterDefinition, graph) {
         });
         // for legend, we can map the names of the cluster with an ordinal scale, iterates over it
         // and we are done with the legend part
-
-        
     });
     graph.nodes = tempNodes;
 
@@ -115,6 +131,23 @@ function assignCluster(clusterDefinition, graph) {
     // once this is done, we use a pass thru the cluster and bundle layout
     // bundle layout is ok for transition
     // cluster layout.. i do not think so
+}
+function resetClustering() {
+    // we use the initial ordering of key
+    var keys = originalKeys;
+    var tempNodes = [];
+    var nodesMap = graph.nodeMap;
+    var root = nodesMap[""];
+    root.children = [];
+    keys.forEach(function(nodeKey){
+        var node = nodesMap[nodeKey];
+        root.children.push(node);
+        node.oldX = node.x;
+        node.parent = root;
+        node.clusterKey = "NOCLUSTER";
+        tempNodes.push(node);
+    });
+    graph.nodes = tempNodes;
 }
 
 
@@ -165,6 +198,12 @@ function create_bundle(rawText) {
 
 
   d3.select("#evobundlediv").style("position","relative");
+    d3.select("button").on("click", function(){
+        clusterIndex++;
+        transitionToCluster();
+        d3.select('.clusterContent').html(function(d){ return clusterText[clusterIndex];});
+
+    });
 
   // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
   div = d3.select("#evobundlediv").insert("div")
@@ -196,12 +235,18 @@ function create_bundle(rawText) {
   var json = JSON.parse(rawText);
   graph = parse(json);
     console.log(graph);
+    originalKeys = graph.nodes.map(function(n){
+        return n.key;
+    });
+
+    console.log(originalKeys);
 
     // Frames is a bit strange, as we have an array of 'ALL FRAMES'
     // and in agiven frame their re-occurence
 
+    d3.select('.clusterContent').html(function(d){ return clusterText[0];});
 
-  nodes = cluster.nodes(graph.treeRoot);
+    nodes = cluster.nodes(graph.treeRoot);
     // cluster has x and y properties, plus parent and children properties
 
 
@@ -209,54 +254,176 @@ function create_bundle(rawText) {
     splines = bundle(links[0]);
 
 
-    setInterval(function() {
+    debugger;
 
-        var newCluster = randomizeClustering(4);
-        assignCluster(newCluster, graph);
+
+    var clusterDefinitions = [
+        {
+            description: clusterText[0]
+        },
+        {
+            description: clusterText[1],
+            clustering: randomizeClustering(3)
+        },
+        {
+            description: clusterText[2],
+            clustering: randomizeClustering(3)
+        }
+    ];
+
+
+    function transitionToCluster() {
+
+        if (clusterIndex > 2) {
+            clusterIndex = 0;
+        }
+        var newCluster = clusterDefinitions[clusterIndex].clustering;
+
+        if (newCluster)
+            assignCluster(newCluster, graph);
+        else
+        {
+            resetClustering();
+            debugger;
+        }
 
         // brute-force approach, there may be an incremental way to do it
-        links = graph.frames,
-            splines = bundle(links[0]);
+        links = graph.frames;
+        var newSplines = bundle(graph.frames[0]);
         nodes = cluster.nodes(graph.treeRoot);
-        path.transition().attr("d",
-            function(d, i) {
-                return line(splines[i]);
+        // on s'en fout des controles points, le seul truc qui nous interesse c'est le depart
+        // et l'arrive
+        console.log(newSplines);
+        path.transition().attrTween("d",
+            function(d, i, a) {
+
+                //if (i != 2) return;
+                // make a copy of the targeted Spline, and put all x to the value of OldX..
+                var oldSpline = [];
+                for (var j = 0; j < splines[i].length; j++) {
+                    var s = Object.assign({}, splines[i][j]);
+
+                    if (s.oldX) { s.x = s.oldX; }
+                    oldSpline.push(s);
+                }
+                oldSpline = oldSpline.map(function(s) { return { x: s.x, y: s.y}});
+                var simpleSpline = newSplines[i].map(function(s) { return {x: s.x, y:s.y}});
+                // now if oldspine is missing controlpoints
+
+
+                var delta = simpleSpline.length - oldSpline.length;
+
+                // old spline has less target point ( 3 < 5)
+                if (oldSpline.length < simpleSpline.length) {
+
+                    if (delta !=2 ) return;
+
+                    var pathToTop = Math.floor(simpleSpline.length / 2);
+                    // for 1 => 0 then add index 1(CP) 2(center) 3 (CP) (should not happen)
+                    // for 3 => 1 then add index 1(CP) and 3(CP)
+
+                    var recomposedOldSpline = [];
+                    recomposedOldSpline[0] = oldSpline[0];
+                    if (delta == 2) {
+                        recomposedOldSpline[1] = oldSpline[0];
+                        recomposedOldSpline[2] = oldSpline[1];
+                        recomposedOldSpline[3] = oldSpline[2];
+                        recomposedOldSpline[4] = oldSpline[2];
+                    }  else {
+                        recomposedOldSpline = oldSpline;
+                    }
+                    console.log(recomposedOldSpline.length);
+
+                } else if (delta == -2) { // (5 < 3)
+                    console.log(simpleSpline.length, oldSpline.length);
+                    // newer spline has less target point than older spline
+                    var recomposedNewSpline = [];
+                    recomposedNewSpline[0] = simpleSpline[0];
+                    recomposedNewSpline[1] = simpleSpline[0];
+                    recomposedNewSpline[2] = simpleSpline[1];
+                    recomposedNewSpline[3] = simpleSpline[2];
+                    recomposedNewSpline[4] = simpleSpline[2];
+                    simpleSpline = recomposedNewSpline;
+                    recomposedOldSpline = oldSpline;
+
+                } else
+                {
+                    console.log(oldSpline.length, simpleSpline.length, 'CHECKLENGTH');
+                    recomposedOldSpline = oldSpline;
+                }
+                console.log(recomposedOldSpline, simpleSpline, oldSpline);
+                var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
+
+                // we can update the spline as we are done
+                if (i == 30) {
+                    splines = newSplines;
+                }
+                return function(t) {
+
+                    return line(interpolate(t))
+                };
+                //return d3.interpolateString(a, line(splines[i]));
+                //return line(splines[i]);
             })
             .duration(900);
 
+        // why if i forget the key function,
+        var selection = svg.selectAll("g.node")
+            .data(nodes.filter(function(n) { return true; !n.children; }), function(d){ return d.key});
+        selection.enter().append("svg:g")
+            .attr("class", "node")
+            .attr("id", function(d) { return "node-" + d.key; })
+            .attr("transform", function(d) {
+                var matrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"
+                return matrix;
+            })
+            .append("svg:text")
+            .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+            .attr("dy", ".31em")
+            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+            .text(function(d) { return d.key; })
 
-         var tr = table.selectAll("tr")
-            .data(Object.keys(newCluster));
-        tr.enter().append('tr');
-
-         var td = tr.selectAll("td")
-            .data(function(d, i) { return newCluster[d]; });
-        td.enter().append('td').html(function(d) { return d.name});
-        td.exit().remove();
-
-
-        // why if i forget the key function, everything get messed
-        svg.selectAll("g.node")
-            .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key})
-            .transition().duration(900)
+           selection.transition().duration(900)
             .attrTween("transform", function(d) {
 
                 var oldMatrix = "rotate(" + (d.oldX - 90) + ")translate(" + d.y + ")";
-                console.log(oldMatrix, d.key);
                 var newMatrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
                 return d3.interpolateString(oldMatrix, newMatrix);
             });
 
 
-    }, 2000);
 
-    /*
-    var newCluster = randomizeClustering(4);
-    assignCluster(newCluster, graph);
-    console.log(graph.treeRoot);
-    nodes = cluster.nodes(graph.treeRoot);
-    */
+        var handle = svg.selectAll("g.nodeBar")
+            .data(nodes.filter(function(n) { return !n.children; }));
 
+           handle.transition().duration(900)
+            .attr("transform", function(d) {
+                var newMatrix = "rotate(" + (d.x  ) + ")";
+                return newMatrix
+            });
+
+            // see https://bl.ocks.org/mbostock/5348789 for concurrent transitions,
+            // but i really find it bad... so i will no do it
+            var hpath = handle.select("path");
+            hpath.transition().delay(900).duration(900).style("fill", function(d){
+                if (d.clusterKey) {
+                    return c10(d.clusterKey)
+                } else {
+                    return c10('NOCLUSTER');
+                }
+            });
+
+
+         var tr = table.selectAll("tr")
+         .data(Object.keys(newCluster));
+         tr.enter().append('tr');
+
+         var td = tr.selectAll("td")
+         .data(function(d, i) { return newCluster[d]; });
+         td.enter().append('td').html(function(d) { return d.name});
+         td.exit().remove();
+    }
 
 // NOTE THAT graph.nodes does not include the root
 
@@ -276,21 +443,6 @@ function create_bundle(rawText) {
 
   svg.selectAll("g.node")
       .data(nodes.filter(function(n) { return !n.children; }).sort(function(a,b){
-
-            /*
-              var nameA = a.name.toUpperCase(); // ignore upper and lowercase
-              var nameB = b.name.toUpperCase(); // ignore upper and lowercase
-          console.log('fds',a, b    );
-              if (nameA < nameB) {
-                  return -1;
-              }
-              if (nameA > nameB) {
-                  return 1;
-              }
-
-              // names must be equal
-              return 0;*/
-
       }), function(d) {
           return d.key;
       })
@@ -311,8 +463,6 @@ function create_bundle(rawText) {
       .on("mouseover", mouseoverNode)
       .on("mouseout", mouseoutNode)
       .on("click", toggleNode);
-
-
 
     var drag = d3.behavior.drag()
         .on("drag", function(d,i) {
@@ -459,7 +609,13 @@ function create_bundle(rawText) {
       .attr("id", function(d) { return "nodeBar-" + d.key; })
       .attr("transform", function(d) { return "rotate(" + (d.x )+ ")" ; })
     .append("path")
-      .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
+      .style("fill", function(d){
+          if (d.clusterKey) {
+              return c10(clusterKey)
+          } else {
+              return c10('NOCLUSTER');
+          }
+      })
       .attr("d", arc);
 
   d3.select("input[type=range]")
@@ -811,8 +967,26 @@ function randomizeClustering(numberOfClusters) {
         if (node.children) {
             return true;
         }
-        var key =  KEY + Math.floor(Math.random()*4);
+        var key =  KEY + Math.floor(Math.random() * numberOfClusters);
         clusters[key].push(node);
     });
     return clusters;
 }
+
+/*
+M275.0404302040328,52.466768084002965
+L250.15400171540736,55.00595360150042
+C225.26757322678193,57.54513911899788,175.49471624953108,62.6235101539928,129.9257552427783,56.02511092818676
+C84.3567942360255,49.42671170238073,42.991729199770774,31.15154221577373,4.548868873861348,36.00800486643642
+C-33.89399145204808,40.86446751709911,-69.41464706761221,68.85256230503148,-111.9110202099458,86.57620045654039
+C-154.4073933522794,104.2998386080493,-203.87948402138247,111.75902012313475,-228.61552935593397,115.48861088067747
+L-253.35157469048553,119.2182016382202*/
+
+
+// i think what i am doing is wrong during the clustering process...
+// nodes of same cluster does not have the cluster as a parent
+// nodes of different cluster has
+
+
+
+
