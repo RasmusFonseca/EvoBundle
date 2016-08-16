@@ -70,9 +70,14 @@ function create_bundle(rawText) {
     .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
     .on("mousedown", mousedown);
 
-  d3.select("button").on("click", function() {
+  d3.select(".switchButton").on("click", function() {
     transitionToCluster();
   });
+
+  d3.select(".summaryButton").on("click", function() {
+    transitionToSummary();
+  });
+
   //d3.json("interactionTimeline.json", function(classes) {
   //    console.log(classes);
   //  var nodes = cluster.nodes(genRoot(classes)),
@@ -93,8 +98,8 @@ function create_bundle(rawText) {
   if(json.defaults && json.defaults.color) stdEdgeColor = json.defaults.color;
   if(json.defaults && json.defaults.width) stdEdgeWidth = json.defaults.width;
   nodes = cluster.nodes(graph.treeRoot);
-  links = graph.frames,
-    splines = bundle(links[0]);
+  links = graph.frames;
+  splines = bundle(links[0]);
 
   var path = svg.selectAll("path.link")
     .data(links[0])
@@ -688,4 +693,78 @@ function parseCluster(cluster) {
   return clusterDefinition;
 }
 
+function transitionToSummary(){
+  //links contains all the frames
+  console.log(links[0]);
+
+  //Initialize empty two-dim array
+  var n = nodes.length;
+  var countMatrix = new Array(n);
+  for(var i=0;i<n;i++) {
+    countMatrix[i] = new Array(n);
+    for(var j=0;j<n;j++)
+      countMatrix[i][j] = 0;
+
+    //Add index to nodes for faster lookup
+    nodes[i].idx = i;
+  }
+
+  var maxVal = 0;
+
+  //Go through all frames and add counts to distMatrix
+  for(var f=0;f<links.length;f++){
+    for(var i=0;i<links[f].length;i++){
+      idx1 = links[f][i].source.idx;
+      idx2 = links[f][i].target.idx;
+      countMatrix[idx1][idx2]++;
+      countMatrix[idx2][idx1]++;
+
+      if (countMatrix[idx2][idx1]>maxVal)
+        maxVal = countMatrix[idx2][idx1];
+    }
+  }
+  console.log(countMatrix);
+
+  var newLinks = [];
+  for(var i=0;i<n;i++) {
+    for(var j=i+1;j<n;j++){
+      if(countMatrix[i][j]==0) continue;
+
+      countMatrix[i][j]/=maxVal;
+      var ndi, ndj;
+      for(var nd=0;nd<n;nd++) {
+        if (nodes[nd].idx == i) ndi = nodes[nd];
+        if (nodes[nd].idx == j) ndj = nodes[nd];
+      }
+
+      newLinks.push( {"source":ndi, "target":ndj, "weight":countMatrix[i][j]} );
+    }
+  }
+
+  var splines = bundle(newLinks);
+  path = svg.selectAll("path.link")
+    .data(newLinks);
+
+  path.enter().append("svg:path")
+    .attr("class", function(d) {
+      var ret = "link source-" + d.source.key + " target-" + d.target.key;
+      if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+        ret+=" toggled";
+      return ret;
+    });
+  path.attr("class", function(d) {
+      var ret = "link source-" + d.source.key + " target-" + d.target.key;
+      if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+        ret+=" toggled";
+      return ret;
+    })
+    .attr("d", function(d, i) { return line(splines[i]); })
+    .transition()
+    .style("stroke-width",function(d){ return d.weight*20; })
+    .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; });
+
+  path.exit().remove();
+
+
+}
 
