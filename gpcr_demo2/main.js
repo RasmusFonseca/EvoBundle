@@ -256,20 +256,21 @@ function create_bundle(rawText) {
 
   }
 
-
   function transitionToCluster() {
     originalCluster = !originalCluster;
     if (!originalCluster) {
       assignCluster(clusterDefinition, graph);
+      fireClusterListeners(true);
     } else {
       resetClustering();
+      fireClusterListeners(false);
     }
     // brute-force approach, there may be an incremental way to do it
     links = graph.frames;
     var newSplines = bundle(graph.frames[curFrame]);
     nodes = cluster.nodes(graph.treeRoot);
     // on s'en fout des controles points, le seul truc qui nous interesse c'est le depart
-    // et l'arrive
+    // et l'arrive .. english, man!
     var done = false;
     var path = svg.selectAll("path.link");
     path.transition().attrTween("d",
@@ -386,7 +387,9 @@ function create_bundle(rawText) {
       var newMatrix = "rotate(" + (d.x  ) + ")";
       return newMatrix
     });
-    hpath.transition().delay(900).duration(900).style("fill", function(d){
+    hpath.transition()
+      .delay(function(d,i){return 900+i;})
+      .duration(900).style("fill", function(d){
       if (originalCluster) {
         return ("color" in d)?d.color:stdEdgeColor;
       } else {
@@ -674,7 +677,6 @@ function parseCluster(cluster) {
   var keyValuesClusterArray = cluster.split('"');
   var numberOfObjects = Math.floor(keyValuesClusterArray.length / 2);
   var clusterDefinition = {};
-  var missingKeys = {};
   for (var i = 0; i < numberOfObjects; i++) {
     var keys = keyValuesClusterArray[i * 2 + 1].split(' ');
 
@@ -692,6 +694,25 @@ function parseCluster(cluster) {
   clusterDefinition['Others'] = absentCluster;
   return clusterDefinition;
 }
+
+
+var clusterListeners = [];
+function fireClusterListeners(clusteringEnabled){
+  for(var i=0;i<clusterListeners.length;i++){
+    clusterListeners[i](clusteringEnabled);
+  }
+}
+
+
+
+var summaryListeners = [];
+function fireSummaryListeners(){
+  for(var i=0;i<summaryListeners.length;i++){
+    summaryListeners[i](summaryLinks);
+  }
+}
+
+var summaryLinks;
 
 function transitionToSummary(){
   //links contains all the frames
@@ -725,7 +746,7 @@ function transitionToSummary(){
   }
   console.log(countMatrix);
 
-  var newLinks = [];
+  summaryLinks = [];
   for(var i=0;i<n;i++) {
     for(var j=i+1;j<n;j++){
       if(countMatrix[i][j]==0) continue;
@@ -737,13 +758,13 @@ function transitionToSummary(){
         if (nodes[nd].idx == j) ndj = nodes[nd];
       }
 
-      newLinks.push( {"source":ndi, "target":ndj, "weight":countMatrix[i][j]} );
+      summaryLinks.push( {"source":ndi, "target":ndj, "weight":countMatrix[i][j]} );
     }
   }
 
-  var splines = bundle(newLinks);
+  var splines = bundle(summaryLinks);
   path = svg.selectAll("path.link")
-    .data(newLinks);
+    .data(summaryLinks);
 
   path.enter().append("svg:path")
     .attr("class", function(d) {
