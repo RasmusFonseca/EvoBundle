@@ -14,10 +14,10 @@ path.arc {
     fill: #1f77b4;
 }
 
-.toggledNode{
+.toggledNode {
     font-size: 10px;
-    fill: "black";
-    font-weight: bold;
+    fill: black !important;
+    font-weight: bold !important;
     cursor: pointer;
 }
 

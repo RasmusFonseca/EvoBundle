@@ -232,12 +232,10 @@ function create_bundle(rawText) {
   //  .map(function(d){return {rawArr:d}; });
   var json = JSON.parse(rawText);
   graph = parse(json);
-    console.log(graph);
     originalKeys = graph.nodes.map(function(n){
         return n.key;
     });
 
-    console.log(originalKeys);
 
     // Frames is a bit strange, as we have an array of 'ALL FRAMES'
     // and in agiven frame their re-occurence

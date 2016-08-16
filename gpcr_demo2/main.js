@@ -222,7 +222,6 @@ function create_bundle(rawText) {
 
   function resetClustering() {
     // we use the initial ordering of key
-    debugger;
     var keys = originalKeys;
     var nodesMap = graph.nodeMap;
     var oldCoordinatesMap = {};
@@ -248,7 +247,7 @@ function create_bundle(rawText) {
         node.oldY = oldCoordinate.y;
       }
     });
-    debugger;
+
   }
 
 
@@ -345,7 +344,7 @@ function create_bundle(rawText) {
           //return line(splines[i]);
         })
         .duration(900);
-    
+
     // why if i forget the key function,
     var selection = svg.selectAll("g.node")
         .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key});
@@ -549,9 +548,10 @@ function forward(){
 
 
 function toggleNode(d,i){
-  var toggled = d3.select(this.parentNode).attr("class")=="toggledNode";
+  var toggled = !d3.select(this.parentNode).classed("toggledNode");
+  console.log(toggled);
   d3.select(this.parentNode)
-    .attr("class", function(){return toggled?"node":"toggledNode"; });
+    .classed("toggledNode", function(d){return toggled; });
 
   var name = d.name.substring(d.name.lastIndexOf(".")+1);
   if(toggled)
@@ -686,7 +686,6 @@ function parseCluster(cluster) {
     }
   });
   clusterDefinition['Others'] = absentCluster;
-  debugger;
   return clusterDefinition;
 }
 
