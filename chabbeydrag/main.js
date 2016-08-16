@@ -83,8 +83,6 @@ var originalKeys;
  */
 function assignCluster(clusterDefinition, graph) {
 
-
-
     var keys = Object.keys(clusterDefinition);
     var tempNodes = [];
     var nodesMap = graph.nodeMap;
