@@ -560,11 +560,8 @@ function toggleNode(d,i){
     toggledNodes[name] = "";
 
   path = svg.selectAll("path.link")
-    .attr("class", function(d) {
-      var ret = "link source-" + d.source.key + " target-" + d.target.key;
-      if( d.source.key in toggledNodes || d.target.key in toggledNodes)
-        ret+=" toggled";
-      return ret;
+    .classed("toggled", function(d) {
+      return ( d.source.key in toggledNodes || d.target.key in toggledNodes)
     });
 
   //svg.selectAll("path.link/target-"+d.key);
