@@ -145,6 +145,7 @@ function create_bundle(rawText) {
   d3.select("input[type=range]")
     .on("input", function() {
       line.tension(this.value / 100);
+      var path = svg.selectAll("path.link"); // you need to reselect cause the data can have changed
       path.attr("d", function(d, i) { return line(splines[i]); });
     });
 
@@ -470,7 +471,6 @@ function setFrame(frame){
   path = svg.selectAll("path.link")
     .data(links[frame]);//, function(d){ return {source:d.source, target:d.target}; });
 
-  path.exit().remove();
   path.enter().append("svg:path")
     .attr("class", function(d) {
       var ret = "link source-" + d.source.key + " target-" + d.target.key;
@@ -489,6 +489,8 @@ function setFrame(frame){
     //.attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; })
     .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
     .attr("d", function(d, i) { return line(splines[i]); });
+
+  path.exit().remove();
 
   curFrame = frame;
 }
