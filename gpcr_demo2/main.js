@@ -342,10 +342,10 @@ function create_bundle(rawText) {
             if (!done){
               done = true;
               splines = newSplines;
-              path.data(links[curFrame]);
+              // we do not want to rebind data here
             }
 
-          },1000);
+          },800);
 
           return function(t) {
 
