@@ -102,7 +102,7 @@ function create_bundle(rawText) {
   splines = bundle(links[0]);
 
   var path = svg.selectAll("path.link")
-    .data(links[0])
+    .data(links[0], function(d,i){ return "link source-" + d.source.key + " target-" + d.target.key;})
     .enter().append("svg:path")
     .attr("class", function(d) {
       var ret = "link source-" + d.source.key + " target-" + d.target.key;
@@ -767,7 +767,7 @@ function transitionToSummary(){
 
   var splines = bundle(summaryLinks);
   path = svg.selectAll("path.link")
-    .data(summaryLinks);
+    .data(summaryLinks, function(d,i){ return "link source-" + d.source.key + " target-" + d.target.key;});
 
   path.enter().append("svg:path")
     .attr("class", function(d) {
