@@ -285,10 +285,15 @@ function create_bundle(rawText) {
           for (var j = 0; j < splines[i].length; j++) {
             var s = Object.assign({}, splines[i][j]);
 
-            if (s.oldX) { s.x = s.oldX; }
+            // when we get back to old cluster, splines array is not updated
+            // as we got new nodes in the graph array, so the x coordinates
+            // is really the old coordinate in that case
+            if (s.oldX && !originalCluster) { s.x = s.oldX; }
             oldSpline.push(s);
           }
-          oldSpline = oldSpline.map(function(s) { return { x: s.x, y: s.y}});
+          oldSpline = oldSpline.map(function(s) {
+            return {x: s.x, y: s.y};
+          });
           var simpleSpline = newSplines[i].map(function(s) { return {x: s.x, y:s.y}});
           // now if oldspine is missing controlpoints
 
@@ -316,7 +321,6 @@ function create_bundle(rawText) {
             }
 
           } else if (delta == -2) { // (5 < 3)
-            console.log(simpleSpline.length, oldSpline.length);
             // newer spline has less target point than older spline
             var recomposedNewSpline = [];
             recomposedNewSpline[0] = simpleSpline[0];
@@ -336,9 +340,9 @@ function create_bundle(rawText) {
           // we can update the spline as we are done
           setTimeout(function(){
             if (!done){
-              console.log('DONE');
               done = true;
               splines = newSplines;
+              path.data(links[curFrame]);
             }
 
           },1000);
@@ -559,7 +563,6 @@ function forward(){
 
 function toggleNode(d,i){
   var toggled = !d3.select(this.parentNode).classed("toggledNode");
-  console.log(toggled);
   d3.select(this.parentNode)
     .classed("toggledNode", function(d){return toggled; });
 
