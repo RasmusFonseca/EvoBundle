@@ -102,7 +102,11 @@ function create_bundle(rawText) {
   splines = bundle(links[0]);
 
   var path = svg.selectAll("path.link")
-    .data(links[0], function(d,i){ return "link source-" + d.source.key + " target-" + d.target.key;})
+    .data(links[0], function(d,i){
+        var key = "source-" + d.source.key + "target-" + d.target.key;
+        console.log(key);
+        return key;
+      })
     .enter().append("svg:path")
     .attr("class", function(d) {
       var ret = "link source-" + d.source.key + " target-" + d.target.key;
@@ -481,7 +485,7 @@ function setFrame(frame){
 
   splines = bundle(links[frame]);
   path = svg.selectAll("path.link")
-    .data(links[frame]);//, function(d){ return {source:d.source, target:d.target}; });
+    .data(links[frame], function(d,i){ return "source-" + d.source.key + "target-" + d.target.key;});//, function(d){ return {source:d.source, target:d.target}; });
 
   path.enter().append("svg:path")
     .attr("class", function(d) {
@@ -717,6 +721,7 @@ function fireSummaryListeners(){
 
 var summaryLinks;
 
+var D;
 function transitionToSummary(){
   //links contains all the frames
   console.log(links[0]);
@@ -742,40 +747,48 @@ function transitionToSummary(){
       idx2 = links[f][i].target.idx;
       countMatrix[idx1][idx2]++;
       countMatrix[idx2][idx1]++;
-
       if (countMatrix[idx2][idx1]>maxVal)
         maxVal = countMatrix[idx2][idx1];
     }
   }
-  console.log(countMatrix);
 
   summaryLinks = [];
   for(var i=0;i<n;i++) {
-    for(var j=i+1;j<n;j++){
+    for(var j=0;j<n;j++){
       if(countMatrix[i][j]==0) continue;
-
-      countMatrix[i][j]/=maxVal;
       var ndi, ndj;
       for(var nd=0;nd<n;nd++) {
         if (nodes[nd].idx == i) ndi = nodes[nd];
         if (nodes[nd].idx == j) ndj = nodes[nd];
       }
-
       summaryLinks.push( {"source":ndi, "target":ndj, "weight":countMatrix[i][j]} );
     }
   }
 
-  var splines = bundle(summaryLinks);
-  path = svg.selectAll("path.link")
-    .data(summaryLinks, function(d,i){ return "link source-" + d.source.key + " target-" + d.target.key;});
+  var summaryLinksExtent = d3.extent(summaryLinks, function(d) {
+    return d.weight;
+  });
 
-  path.enter().append("svg:path")
-    .attr("class", function(d) {
-      var ret = "link source-" + d.source.key + " target-" + d.target.key;
-      if( d.source.key in toggledNodes || d.target.key in toggledNodes)
-        ret+=" toggled";
-      return ret;
-    });
+  var linkWidthScale = d3.scale.linear()
+                             .domain(summaryLinksExtent)
+                             .range([0,50]);
+
+  D = countMatrix;
+  var splines = bundle(summaryLinks);
+
+  path = svg.selectAll("path.link")
+    .data(summaryLinks, function(d,i){
+        var key = "source-" + d.source.key + "target-" + d.target.key;
+        return key;
+      });
+
+
+  // some nodes are removed because they are not
+  console.log(path.enter());
+
+  path.enter().insert("svg:path")
+    .style("stroke-width",function(d){ return 0; });
+
   path.attr("class", function(d) {
       var ret = "link source-" + d.source.key + " target-" + d.target.key;
       if( d.source.key in toggledNodes || d.target.key in toggledNodes)
@@ -783,12 +796,10 @@ function transitionToSummary(){
       return ret;
     })
     .attr("d", function(d, i) { return line(splines[i]); })
-    .transition()
-    .style("stroke-width",function(d){ return d.weight*20; })
+    .transition().duration(2000)
+    .style("stroke-width",function(d){ return linkWidthScale(d.weight) })
     .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; });
 
   path.exit().remove();
-
-
 }
 
