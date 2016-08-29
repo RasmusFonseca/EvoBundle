@@ -398,28 +398,29 @@
     });
 
   }
-        tickListeners.push(updateInteractions);
 
-        function indexToClusterColor(idx){
-          var colTab = {"":[0.5,0.5,0.5,1], "1":[0,1,1,1], "2":[1,0,1,1]};
-          for (var key in nameToResiTable) {
-            if (nameToResiTable.hasOwnProperty(key)) {
-              if(nameToResiTable[key][0]==""+idx) {
-                console.log(idx+" "+nameToResiTable[key][1]);
-                return colTab[nameToResiTable[key][1]];
-              }
-            }
-          }
-          return colTab[""];
+  tickListeners.push(updateInteractions);
+
+  function indexToClusterColor(idx){
+    var colTab = {"":[0.5,0.5,0.5,1], "1":[0,1,1,1], "2":[1,0,1,1]};
+    for (var key in nameToResiTable) {
+      if (nameToResiTable.hasOwnProperty(key)) {
+        if(nameToResiTable[key][0]==""+idx) {
+          console.log(idx+" "+nameToResiTable[key][1]);
+          return colTab[nameToResiTable[key][1]];
         }
+      }
+    }
+    return colTab[""];
+  }
 
-        function updateColors(clustered){
-          viewer.rm('protein');
-          var geom = viewer.trace('protein', struc, { color : color.ssSuccession() });
-          if(clustered){
-            function clusterCol() {
-              return new pv.color.ColorOp(function(atom, out, index) {
-                var col = indexToClusterColor(atom.residue().num());
+  function updateColors(clustered){
+    viewer.rm('protein');
+    var geom = viewer.trace('protein', struc, { color : color.ssSuccession() });
+    if(clustered){
+      function clusterCol() {
+        return new pv.color.ColorOp(function(atom, out, index) {
+          var col = indexToClusterColor(atom.residue().num());
 
           out[index+0] = col[0];
           out[index+1] = col[1];

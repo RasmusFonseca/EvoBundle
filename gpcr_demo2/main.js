@@ -607,7 +607,7 @@ function toggleNode(d,i){
         });
 
     //svg.selectAll("path.link/target-"+d.key);
-    //fireTickListeners(curFrame);
+    fireTickListeners(curFrame);
 }
 
 function mouse(e) {
@@ -771,6 +771,9 @@ function transitionToSummary(){
         summaryMode = !summaryMode;
         return;
     }
+
+    if(playing) { playpause(); }
+
     summaryMode = !summaryMode;
     console.log(links[0]);
 
