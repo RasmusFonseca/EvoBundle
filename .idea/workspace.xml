@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="9b307cc4-2e86-4ca4-a25e-c1cafded64b1" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/gpcr_demo2/main.js" afterPath="$PROJECT_DIR$/gpcr_demo2/main.js" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
     </list>
     <ignored path="EvoBundle.iws" />
     <ignored path=".idea/workspace.xml" />
@@ -37,8 +36,8 @@
       <file leaf-file-name="main.js" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/gpcr_demo2/main.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.3328424">
-              <caret line="710" column="13" selection-start-line="710" selection-start-column="11" selection-end-line="710" selection-end-column="13" />
+            <state vertical-scroll-proportion="0.57584685">
+              <caret line="405" column="35" selection-start-line="405" selection-start-column="35" selection-end-line="405" selection-end-column="35" />
               <folding />
             </state>
           </provider>
@@ -387,8 +386,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gpcr_demo2/main.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.3328424">
-          <caret line="710" column="13" selection-start-line="710" selection-start-column="11" selection-end-line="710" selection-end-column="13" />
+        <state vertical-scroll-proportion="0.57584685">
+          <caret line="405" column="35" selection-start-line="405" selection-start-column="35" selection-end-line="405" selection-end-column="35" />
           <folding />
         </state>
       </provider>

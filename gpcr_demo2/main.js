@@ -390,6 +390,7 @@ function create_bundle(rawText) {
                 var newMatrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
                 return d3.interpolateString(oldMatrix, newMatrix);
             });
+        selection.exit().remove();
 
 
 
@@ -402,6 +403,8 @@ function create_bundle(rawText) {
             var newMatrix = "rotate(" + (d.x  ) + ")";
             return newMatrix
         });
+        //TODO remove unused handle
+
         hpath.transition()
             .delay(function(d,i){return 900+i;})
             .duration(900).style("fill", function(d){
