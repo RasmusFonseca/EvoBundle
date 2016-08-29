@@ -1,3 +1,7 @@
+//TODO (put d3 in source code)
+//TODO (check if the bug of disappearing links is due to the addition of a key function)
+//TODO (finish legend)
+
 var clustering = 'LigandPocket: "2.2x51 2.2x53 2.2x56 2.2x57 2.2x60 2.2x61 2.2x63 2.2x64 2.2x65 3.3x28 3.3x29 3.3x32 3.3x33 3.3x36 3.3x37 3.3x40 4.4x56 4.4x57 4.4x59 4.4x60 4.4x61 5.5x38 5.5x39 5.5x42 5.5x43 5.5x44 5.5x45 5.5x46 5.5x461 5.5x47 6.6x44 6.6x45 6.6x48 6.6x51 6.6x52 6.6x54 6.6x55 6.6x58 6.6x59 7.7x30 7.7x31 7.7x32 7.7x33 7.7x34 7.7x35 7.7x36 7.7x37 7.7x38 7.7x39 7.7x40 7.7x41 7.7x42 7.7x43 7.7x44" GproteinPocket: "3.3x50 3.3x53 3.3x54 3.3x55 5.5x61 5.5x64 6.6x33 6.6x36 6.6x37"'
 //5x58 -> 7x53 disappears
 
@@ -287,8 +291,9 @@ function create_bundle(rawText) {
         var path = svg.selectAll("path.link");
 
 
-        // good way would be to have a map of all the splines and use that, so we could get rid
-        // of the usage of the index, which is a bad thing !
+        // TODO(chab) good way would be to have a map of all the splines and use that, so we could get rid
+        // of the usage of the index. We have no guarantee that the two splines array have the same ordering,
+        // usage of key and map would allow us to get rid of that assumption
 
         path.transition().attrTween("d",
             function(d, i, a) {
@@ -864,6 +869,22 @@ function checkDuplicate(dicoA, dicoB) {
 // x axis on the bottom (0,legendHeight) ---------- (maxwidth, legendHeight )
 // SVG PATH would be   M 0 <LH>  L <MX> <LH> L <MW> 0 L <MW> <LH>
 
+function makeLegend(options) {
+    var lineFunction = d3.svg.line()
+        .x(function(d) { return d.x; })
+        .y(function(d) { return d.y; })
+        .interpolate("linear");
 
+    var topX = 0, topY= 0, width = options.width, height = options.height,
+        minValue = options.minValue, maxValue = options.maxValue;
+
+    var set = [
+        {x:0, y:height},
+        {x:width, y:height},
+        {x:width, y:0},
+        {x:0, y:0 }];
+
+    //path.datum(data).attr("d", line);
+}
 
 
