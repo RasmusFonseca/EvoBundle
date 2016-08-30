@@ -873,21 +873,37 @@ function checkDuplicate(dicoA, dicoB) {
 // SVG PATH would be   M 0 <LH>  L <MX> <LH> L <MW> 0 L <MW> <LH>
 
 function makeLegend(options) {
-    var lineFunction = d3.svg.line()
+    var lineGenerator = d3.svg.line()
         .x(function(d) { return d.x; })
         .y(function(d) { return d.y; })
         .interpolate("linear");
 
     var topX = 0, topY= 0, width = options.width, height = options.height,
-        minValue = options.minValue, maxValue = options.maxValue;
+        minValue = options.minValue, maxValue = options.maxValue, domainMax = options.domainMax;
 
-    var set = [
+
+    var axisXScale = d3.scale.linear()
+        .domain([0, options.domainMax])
+        .range([0, 30]);
+
+    var xAxis = d3.svg.axis().scale(axisXScale).tickSize(1);
+
+
+    var linePoints = [
         {x:0, y:height},
         {x:width, y:height},
         {x:width, y:0},
         {x:0, y:0 }];
 
-    //path.datum(data).attr("d", line);
+    // main leged
+
+    path.datum(linePoints).attr("d", lineGenerator);
+
+    // add axis
+
+    svg.append("g")
+        .attr("class", "x axis")
+        .call(xAxis);
 }
 
 
