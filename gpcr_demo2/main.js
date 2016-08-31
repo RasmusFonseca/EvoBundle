@@ -236,6 +236,8 @@ function create_bundle(rawText) {
         .style("height", ch+"px")
         .style("bottom", "13px");
 
+    makeLegend( );
+
     function resetClustering() {
         // we use the initial ordering of key
         var keys = originalKeys;
@@ -769,8 +771,9 @@ function transitionToSummary(){
         path.exit().transition().duration(2000)
             .style("stroke-width",function(d){ return 0; }).remove();
         summaryMode = !summaryMode;
-        return;
+        removeLegend()
     }
+
 
     if(playing) { playpause(); }
 
@@ -820,12 +823,23 @@ function transitionToSummary(){
         return d.weight;
     });
 
+    var legendMaxHeight = 30;
+
     var linkWidthScale = d3.scale.linear()
         .domain(summaryLinksExtent)
-        .range([0,30]);
+        .range([0, legendMaxHeight]);
 
     D = countMatrix;
     var splines = bundle(summaryLinks);
+
+    options = {
+        width: 200,
+        height: legendMaxHeight,
+        minValue:0,
+        maxValue: Math.floor(summaryLinksExtent[1] / 1000)
+    };
+    makeLegend(options);
+
 
     path = svg.selectAll("path.link")
         .data(summaryLinks, function(d,i){
@@ -872,19 +886,28 @@ function checkDuplicate(dicoA, dicoB) {
 // x axis on the bottom (0,legendHeight) ---------- (maxwidth, legendHeight )
 // SVG PATH would be   M 0 <LH>  L <MX> <LH> L <MW> 0 L <MW> <LH>
 
+function removeLegend() {
+    svg.select(".legendChart").remove();
+}
+
 function makeLegend(options) {
+
+    // remove old legend
+    removeLegend();
+
     var lineGenerator = d3.svg.line()
         .x(function(d) { return d.x; })
         .y(function(d) { return d.y; })
         .interpolate("linear");
 
+
     var topX = 0, topY= 0, width = options.width, height = options.height,
-        minValue = options.minValue, maxValue = options.maxValue, domainMax = options.domainMax;
+        minValue = options.minValue, maxValue = options.maxValue
 
 
     var axisXScale = d3.scale.linear()
-        .domain([0, options.domainMax])
-        .range([0, 30]);
+        .domain([options.minValue, options.maxValue])
+        .range([0, options.width]);
 
     var xAxis = d3.svg.axis().scale(axisXScale).tickSize(1);
 
@@ -893,17 +916,28 @@ function makeLegend(options) {
         {x:0, y:height},
         {x:width, y:height},
         {x:width, y:0},
-        {x:0, y:0 }];
+        {x:0, y:height }
+    ];
 
     // main leged
 
-    path.datum(linePoints).attr("d", lineGenerator);
+   //
 
+    var xOrigin = 150;
+    var yOrigin = 200;
+    var axisPadding = 10;
     // add axis
 
-    svg.append("g")
+    var legendGraph = svg.append("g")
+        .attr("class","legendChart")
+        .attr("transform", "translate(" + xOrigin+ "," + yOrigin + ")");
+
+    legendGraph.append("g")
         .attr("class", "x axis")
+        .attr("transform", "translate(0," + (axisPadding + height) + ")")
         .call(xAxis);
+    var path = legendGraph.append("path").classed("legend", true);
+    path.datum(linePoints).attr("d", lineGenerator);
 }
 
 
