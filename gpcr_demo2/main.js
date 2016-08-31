@@ -772,6 +772,8 @@ function transitionToSummary(){
             .style("stroke-width",function(d){ return 0; }).remove();
         summaryMode = !summaryMode;
         removeLegend()
+
+        return;
     }
 
 
@@ -923,8 +925,8 @@ function makeLegend(options) {
 
    //
 
-    var xOrigin = 150;
-    var yOrigin = 200;
+    var xOrigin = 180;
+    var yOrigin = 250;
     var axisPadding = 10;
     // add axis
 
