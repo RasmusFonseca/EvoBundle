@@ -1,6 +1,14 @@
-
+/**
+ * Parse a graph and return the same reference but with additional fields:
+ * nodeMap - a map associating each node name (string) with a node reference
+ * nodes - a list of nodes in no particular order
+ * edges - a list of (not necessarily distinct) interactions with interaction timepoints (frames)
+ * treeRoot - root of the tree that contains all nodes as leaves (TODO: Should be a list)
+ * frames - list of list of interactions. First list has an entry for each time point.
+ */
 function parse(graph){
   var nodeMap = {};
+  graph.nodeMap = nodeMap;
 
   function addToMap(name, data) {
     var node = nodeMap[name], i;
@@ -14,6 +22,7 @@ function parse(graph){
     }
     return node;
   };
+
 
   //Build parents of nodes and add all tree-vertices to nodeMap
   if( !("nodes" in graph) ) graph.nodes = []; 

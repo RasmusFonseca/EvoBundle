@@ -1,0 +1,94 @@
+{
+  "edges": [
+    {"name1":"ARG179", "name2":"ASP164", "color":"#AA2222", "width":10, "frames":[0,1,2,3,4] },
+    {"name1":"ARG179", "name2":"ASP164",                    "width":5,  "frames":[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] },
+    {"name1":"ARG211", "name2":"ASP216",                                "frames":[] },
+    {"name1":"ARG211", "name2":"ASP216",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU229",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU229",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU310",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU310",                                "frames":[] },
+    {"name1":"ARG211", "name2":"ASP216",                                "frames":[] },
+    {"name1":"ARG211", "name2":"ASP216",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU229",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU229",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU310",                                "frames":[] },
+    {"name1":"ARG211", "name2":"GLU310",                                "frames":[] },
+    {"name1":"ARG273", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG273", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG273", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG273", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG276", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG276", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG276", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG276", "name2":"ASP272",                                "frames":[] },
+    {"name1":"ARG277", "name2":"GLU341",                                "frames":[] },
+    {"name1":"ARG277", "name2":"GLU341",                                "frames":[] },
+    {"name1":"ARG277", "name2":"GLU341",                                "frames":[17] },
+    {"name1":"ARG277", "name2":"GLU341",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"ASP216",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"ASP216",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU229",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU229",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU310",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU310",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"ASP216",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"ASP216",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU229",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU229",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU310",                                "frames":[] },
+    {"name1":"HIS54",  "name2":"GLU310",                                "frames":[] },
+    {"name1":"LYS174", "name2":"ASP177",                                "frames":[] },
+    {"name1":"LYS209", "name2":"ASP216",                                "frames":[] },
+    {"name1":"LYS209", "name2":"ASP216",                                "frames":[] },
+    {"name1":"LYS209", "name2":"GLU229",                                "frames":[] },
+    {"name1":"LYS209", "name2":"GLU229",                                "frames":[] },
+    {"name1":"LYS233", "name2":"ASP216",                                "frames":[] },
+    {"name1":"LYS233", "name2":"GLU229",                                "frames":[4,5,6,7,9,10,11,12,14,16,17] },
+    {"name1":"LYS233", "name2":"GLU229",                                "frames":[0,1,2,3,9,19,20] },
+    {"name1":"LYS269", "name2":"ASP272",                                "frames":[] },
+    {"name1":"LYS269", "name2":"ASP272",                                "frames":[] },
+    {"name1":"LYS271", "name2":"ASP272",                                "frames":[] },
+    {"name1":"LYS271", "name2":"ASP272",                                "frames":[] },
+    {"name1":"LYS303", "name2":"GLU310",                                "frames":[] },
+    {"name1":"LYS303", "name2":"GLU310",                                "frames":[] },
+    {"name1":"LYS344", "name2":"GLU341",                                "frames":[] },
+    {"name1":"LYS344", "name2":"GLU341",                                "frames":[0,1,2,3,4,5,6,8,9,10,11,12,13,14,15,16] }
+  ],
+  "trees": [
+    {
+      "treeLabel": "341+344",
+      "treePaths": [
+        "ONEFOUR.LYS344",
+        "ONEFOUR.GLU341"
+      ]
+    },
+    {
+      "treeLabel": "Disparate",
+      "treePaths": [
+       "LYS344",
+       "GLU341"
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "trackLabel": "341+344",
+      "trackColors": [
+        { "name": "LYS344", "color": "#2222AA" },
+        { "name": "GLU341", "color": "#111166" }
+      ]
+    },
+    {
+      "trackLabel": "341+344",
+      "trackColors": [
+        { "name": "LYS344", "color": "#2222AA" },
+        { "name": "GLU341", "color": "#111166" }
+      ]
+    }
+  ],
+  "defaults":{
+    "edgeColor":"rgba(100,100,100,100)",
+    "edgeWidth":4
+  }
+}
