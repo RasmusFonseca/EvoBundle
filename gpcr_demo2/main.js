@@ -23,6 +23,11 @@ var originalCluster = true;
 var originalKeys;
 var toggledNodes = {};
 var originalText;
+
+
+var splinesMap = {};
+
+var newSplinesMap = {};
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
     originalText = rawText;
@@ -106,6 +111,12 @@ function create_bundle(rawText) {
     nodes = cluster.nodes(graph.treeRoot);
     links = graph.frames;
     splines = bundle(links[0]);
+
+    // gros gag
+    spinesMap = {}
+    links[0].forEach(function(link, index){
+       splinesMap[link.name1 + '-' + link.name2] = index;
+    });
 
     var path = svg.selectAll("path.link")
         .data(links[0], function(d,i){
@@ -284,6 +295,10 @@ function create_bundle(rawText) {
         } else
         {
             links = graph.frames;
+            newSplinesMap = {}
+            links[0].forEach(function(link, index){
+                newSplinesMap[link.name1 + '-' + link.name2] = index;
+            });
             newSplines = bundle(graph.frames[curFrame]);
         }
         nodes = cluster.nodes(graph.treeRoot);
@@ -297,38 +312,61 @@ function create_bundle(rawText) {
         // of the usage of the index. We have no guarantee that the two splines array have the same ordering,
         // usage of key and map would allow us to get rid of that assumption
 
+
+        // right now we use a map, keys are sourceKey-targetKey, values are the index in the new spline array
         path.transition().attrTween("d",
             function(d, i, a) {
 
                 //if (i != 2) return;
                 // make a copy of the targeted Spline, and put all x to the value of OldX..
                 var oldSpline = [];
+
+                var key = d.name1 + '-' + d.name2;
+                var index = splinesMap[key];
+
+                var debug = false;
+                if (d.source.key == '5x58' && d.target.key == '7x53') {
+                    console.log('FIND CULPRIT', d);
+                    debug = true;
+                }
+
                 if (!splines[i]) {
                     console.log('TOO BAD');
                     return;
                 }
-                for (var j = 0; j < splines[i].length; j++) {
-                    var s = Object.assign({}, splines[i][j]);
-
+                for (var j = 0; j < splines[index].length; j++) {
+                    var s = Object.assign({}, splines[index][j]);
                     // when we get back to old cluster, splines array is not updated
                     // as we got NEW nodes in the graph array, so the x coordinate
                     // is really the old coordinate in that case
                     if (s.oldX && !originalCluster) { s.x = s.oldX; }
+                    if (debug) {
+                        console.log('CULPRIT', splines[index][j]);
+                    }
                     oldSpline.push(s);
                 }
+                console.log(d.source.key,'TO', d.target.key);
+
+
                 oldSpline = oldSpline.map(function(s) {
                     return {x: s.x, y: s.y};
                 });
-                var simpleSpline = newSplines[i].map(function(s) { return {x: s.x, y:s.y}});
+                var simpleSpline = newSplines[index].map(function(s) {
+                    if (debug) console.log('CULPRIT', s);
+                        return {x: s.x, y:s.y}}
+                );
                 // now if oldspine is missing controlpoints
 
 
                 var delta = simpleSpline.length - oldSpline.length;
-
+                console.log('DELTA', delta, 'IDX', index, 'KEY', key);
+                if(debug) {
+                    console.log('CULPRIT', simpleSpline, oldSpline);
+                }
                 // old spline has less target point ( 3 < 5)
                 if (oldSpline.length < simpleSpline.length) {
 
-                    if (delta !=2 ) return;
+
 
                     var pathToTop = Math.floor(simpleSpline.length / 2);
                     // for 1 => 0 then add index 1(CP) 2(center) 3 (CP) (should not happen)
@@ -336,30 +374,53 @@ function create_bundle(rawText) {
 
                     var recomposedOldSpline = [];
                     recomposedOldSpline[0] = oldSpline[0];
-                    if (delta == 2) {
+                    console.log(oldSpline, simpleSpline);
+                    if (delta == 2 && oldSpline.length == 3) {
                         recomposedOldSpline[1] = oldSpline[0];
                         recomposedOldSpline[2] = oldSpline[1];
                         recomposedOldSpline[3] = oldSpline[2];
                         recomposedOldSpline[4] = oldSpline[2];
-                    }  else {
+                    }  else if (delta == 2 && oldSpline.length == 1) {
+                        recomposedOldSpline[1] = oldSpline[0];
+                        recomposedOldSpline[2] = oldSpline[0];
+                    } else if (delta == 4 && oldSpline.length ==1) {
+                        recomposedOldSpline[1] = oldSpline[0];
+                        recomposedOldSpline[2] = oldSpline[0];
+                        recomposedOldSpline[3] = oldSpline[0];
+                        recomposedOldSpline[4] = oldSpline[0];
+                    }
+                    else {
                         recomposedOldSpline = oldSpline;
                     }
 
                 } else if (delta == -2) { // (5 < 3)
                     // newer spline has less target point than older spline
+                    console.log(oldSpline, simpleSpline);
+
+
                     var recomposedNewSpline = [];
-                    recomposedNewSpline[0] = simpleSpline[0];
-                    recomposedNewSpline[1] = simpleSpline[0];
-                    recomposedNewSpline[2] = simpleSpline[1];
-                    recomposedNewSpline[3] = simpleSpline[2];
-                    recomposedNewSpline[4] = simpleSpline[2];
+                    if (simpleSpline.length === 3) {
+                        recomposedNewSpline[0] = simpleSpline[0];
+                        recomposedNewSpline[1] = simpleSpline[0];
+                        recomposedNewSpline[2] = simpleSpline[1];
+                        recomposedNewSpline[3] = simpleSpline[2];
+                        recomposedNewSpline[4] = simpleSpline[2];
+                    } else if (simpleSpline.length === 1) {
+                        recomposedNewSpline[0] = simpleSpline[0];
+                        recomposedNewSpline[1] = simpleSpline[0];
+                        recomposedNewSpline[2] = simpleSpline[0];
+                    }
                     simpleSpline = recomposedNewSpline;
                     recomposedOldSpline = oldSpline;
 
-                } else
+                } else if (delta == -4) {
+                    console.log(oldSpline, simpleSpline, 'ALERT');
+                }
                 {
                     recomposedOldSpline = oldSpline;
                 }
+
+                console.log(recomposedOldSpline, simpleSpline);
                 var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
 
                 // we can update the spline as we are done
@@ -511,6 +572,7 @@ function setFrame(frame){
         .text(""+frame);
 
     splines = bundle(links[frame]);
+
     path = svg.selectAll("path.link")
         .data(links[frame], function(d,i){ return "source-" + d.source.key + "target-" + d.target.key;});//, function(d){ return {source:d.source, target:d.target}; });
 
@@ -825,7 +887,7 @@ function transitionToSummary(){
         return d.weight;
     });
 
-    var legendMaxHeight = 30;
+    var legendMaxHeight = 20;
 
     var linkWidthScale = d3.scale.linear()
         .domain(summaryLinksExtent)
