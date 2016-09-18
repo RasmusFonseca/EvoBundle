@@ -121,12 +121,20 @@ function create_bundle(rawText) {
     var path = svg.selectAll("path.link")
         .data(links[0], function(d,i){
             var key = "source-" + d.source.key + "target-" + d.target.key;
-            console.log(key);
             return key;
         })
         .enter().append("svg:path")
         .attr("class", function(d) {
+            console.log(d);
             var ret = "link source-" + d.source.key + " target-" + d.target.key;
+            var clusterSource = "cluster-" + d.source.parent.key;
+
+            if (d.source.parent.key != d.target.parent.key) {
+                var clusterTarget = "cluster-" + d.target.parent.key;
+                ret = ret + ' ' + clusterTarget;
+            }
+            ret = ret + ' ' + clusterSource;
+
             if( d.source.key in toggledNodes || d.target.key in toggledNodes)
                 ret+=" toggled";
             return ret;
@@ -138,7 +146,7 @@ function create_bundle(rawText) {
     svg.selectAll("g.node")
         .data(nodes.filter(function(n) { return !n.children; }))
         .enter().append("svg:g")
-        .attr("class", "node")
+        .attr("class", function(d){ return "node" + " cluster-"+ d.parent.key})
         .attr("id", function(d) { return "node-" + d.key; })
         .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
         .append("svg:text")
@@ -158,15 +166,60 @@ function create_bundle(rawText) {
         .startAngle(-arcWidth*Math.PI/360)
         .endAngle(arcWidth*Math.PI/360);
 
+    var clusters = graph.treeRoot.children; // cereals
+    var arcCluster =  d3.svg.arc()
+        .innerRadius(ry-60)
+        .outerRadius(ry-40)
+        .startAngle(function(d){
+            return  d.children[0].x * Math.PI/180;
+        })
+        .endAngle(function(d){
+            console.log(d);
+            return  d.children[d.children.length-1].x * Math.PI/180;
+        });
+
     svg.selectAll("g.nodeBar")
         .data(nodes.filter(function(n) { return !n.children; }))
         .enter().append("svg:g")
-        .attr("class", "nodeBar")
+        .attr("class", function(d){ return "nodeBar" + " cluster-"+ d.parent.key})
         .attr("id", function(d) { return "nodeBar-" + d.key; })
         .append("path")
         .attr("transform", function(d) { return "rotate(" + (d.x )+ ")" ; })
         .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
         .attr("d", arc);
+
+    var clusterBars = svg.selectAll("g.clusterBar")
+        .data(clusters)
+        .enter().append("svg:g")
+        .attr("class", function(d) { return "clusterBar cluster-"+ d.key})
+        .attr("id", function(d) { return "clusterBar-" + d.key; })
+        .append("path")
+        //.attr("transform", function(d) { return "rotate(" + (d.x )+ ")" ; })
+        .style("fill", function(d){ return d.children[0].color ? d.children[0].color:"white"; })
+        .style("stroke-width", "2px")
+        .style("stroke", "black")
+        .attr("d", arcCluster);
+
+    clusterBars.on("click", function(d){
+        var clusterKey = d.key;
+        var selectClass = 'path.link:not(.cluster-' + clusterKey + ')';
+        var linksToHide = svg.selectAll(selectClass);
+        linksToHide.transition().duration(500).style("opacity", "0.1");
+
+        selectClass =  'g:not(.cluster-' + clusterKey + ')';
+        linksToHide = svg.selectAll(selectClass);
+        linksToHide.transition().duration(500).style("opacity", "0.1");
+
+
+
+        console.log('Should do something with', linksToHide);
+    });
+
+
+    // we assume we only have a clustering with one level !!
+
+
+
 
     d3.select("input[type=range]")
         .on("input", function() {
@@ -247,7 +300,7 @@ function create_bundle(rawText) {
         .style("height", ch+"px")
         .style("bottom", "13px");
 
-    makeLegend( );
+    //makeLegend( );
 
     function resetClustering() {
         // we use the initial ordering of key
@@ -295,23 +348,15 @@ function create_bundle(rawText) {
         } else
         {
             links = graph.frames;
-            newSplinesMap = {}
+            newSplinesMap = {};
             links[0].forEach(function(link, index){
                 newSplinesMap[link.name1 + '-' + link.name2] = index;
             });
             newSplines = bundle(graph.frames[curFrame]);
         }
         nodes = cluster.nodes(graph.treeRoot);
-        // on s'en fout des controles points, le seul truc qui nous interesse c'est le depart
-        // et l'arrive .. english, man!
         var done = false;
         var path = svg.selectAll("path.link");
-
-
-        // TODO(chab) good way would be to have a map of all the splines and use that, so we could get rid
-        // of the usage of the index. We have no guarantee that the two splines array have the same ordering,
-        // usage of key and map would allow us to get rid of that assumption
-
 
         // right now we use a map, keys are sourceKey-targetKey, values are the index in the new spline array
         path.transition().attrTween("d",
@@ -320,18 +365,11 @@ function create_bundle(rawText) {
                 //if (i != 2) return;
                 // make a copy of the targeted Spline, and put all x to the value of OldX..
                 var oldSpline = [];
-
                 var key = d.name1 + '-' + d.name2;
                 var index = splinesMap[key];
-
                 var debug = false;
-                if (d.source.key == '5x58' && d.target.key == '7x53') {
-                    console.log('FIND CULPRIT', d);
-                    debug = true;
-                }
-
                 if (!splines[i]) {
-                    console.log('TOO BAD');
+                    console.log('No spline found for this index', i);
                     return;
                 }
                 for (var j = 0; j < splines[index].length; j++) {
@@ -340,41 +378,29 @@ function create_bundle(rawText) {
                     // as we got NEW nodes in the graph array, so the x coordinate
                     // is really the old coordinate in that case
                     if (s.oldX && !originalCluster) { s.x = s.oldX; }
-                    if (debug) {
-                        console.log('CULPRIT', splines[index][j]);
-                    }
                     oldSpline.push(s);
                 }
-                console.log(d.source.key,'TO', d.target.key);
 
 
                 oldSpline = oldSpline.map(function(s) {
                     return {x: s.x, y: s.y};
                 });
                 var simpleSpline = newSplines[index].map(function(s) {
-                    if (debug) console.log('CULPRIT', s);
                         return {x: s.x, y:s.y}}
                 );
-                // now if oldspine is missing controlpoints
 
-
+                // we want to have the simple numbers of points between the two spline, to
+                // have a nice transition
                 var delta = simpleSpline.length - oldSpline.length;
-                console.log('DELTA', delta, 'IDX', index, 'KEY', key);
-                if(debug) {
-                    console.log('CULPRIT', simpleSpline, oldSpline);
-                }
-                // old spline has less target point ( 3 < 5)
+
+                // TODO find a way to automate this step
                 if (oldSpline.length < simpleSpline.length) {
-
-
-
                     var pathToTop = Math.floor(simpleSpline.length / 2);
                     // for 1 => 0 then add index 1(CP) 2(center) 3 (CP) (should not happen)
                     // for 3 => 1 then add index 1(CP) and 3(CP)
 
                     var recomposedOldSpline = [];
                     recomposedOldSpline[0] = oldSpline[0];
-                    console.log(oldSpline, simpleSpline);
                     if (delta == 2 && oldSpline.length == 3) {
                         recomposedOldSpline[1] = oldSpline[0];
                         recomposedOldSpline[2] = oldSpline[1];
@@ -395,9 +421,6 @@ function create_bundle(rawText) {
 
                 } else if (delta == -2) { // (5 < 3)
                     // newer spline has less target point than older spline
-                    console.log(oldSpline, simpleSpline);
-
-
                     var recomposedNewSpline = [];
                     if (simpleSpline.length === 3) {
                         recomposedNewSpline[0] = simpleSpline[0];
@@ -414,13 +437,12 @@ function create_bundle(rawText) {
                     recomposedOldSpline = oldSpline;
 
                 } else if (delta == -4) {
-                    console.log(oldSpline, simpleSpline, 'ALERT');
-                }
-                {
+                    console.log(oldSpline, simpleSpline, '-4');
+                } else {
+                    console.log('CASE NOT HANDLED', delta);
                     recomposedOldSpline = oldSpline;
                 }
 
-                console.log(recomposedOldSpline, simpleSpline);
                 var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
 
                 // we can update the spline as we are done
@@ -554,8 +576,6 @@ function create_bundle(rawText) {
         // 1  2  3 => CLUSTERS
         // . . . . . . . . . => NODES
         // once this is done, we use a pass thru the cluster and bundle layout
-        // bundle layout is ok for transition
-        // cluster layout.. i do not think so
     }
 }
 
