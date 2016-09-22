@@ -125,7 +125,6 @@ function create_bundle(rawText) {
         })
         .enter().append("svg:path")
         .attr("class", function(d) {
-            console.log(d);
             var ret = "link source-" + d.source.key + " target-" + d.target.key;
             var clusterSource = "cluster-" + d.source.parent.key;
 
@@ -142,6 +141,25 @@ function create_bundle(rawText) {
         .style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
         .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
         .attr("d", function(d, i) { return line(splines[i]); });
+
+
+
+
+    /** This part computes the small out bar **/
+
+    var valueAssigned = [];
+    nodes.forEach(function(n){
+        if (!n.children) {
+            // assign a random value to the node for the
+            n.someValue = Math.random()*90;
+            valueAssigned.push(n.someValue);
+        }
+    });
+    var extent = d3.extent(valueAssigned);
+    var pieBarScale = d3.scale.linear().domain(extent).range([0,20]);
+
+    /********************************************/
+
 
     svg.selectAll("g.node")
         .data(nodes.filter(function(n) { return !n.children; }))
@@ -160,21 +178,24 @@ function create_bundle(rawText) {
         .on("click", toggleNode);
 
     var arcWidth = 300.0/graph.nodes.length;
+    var innerRadius = ry - 80;
+
     var arc = d3.svg.arc()
-        .innerRadius(ry-80)
-        .outerRadius(ry-70)
+        .innerRadius(function() { return ry-80})
+        .outerRadius(function(d){
+            return ry - 60 - pieBarScale(d.someValue);
+        })
         .startAngle(-arcWidth*Math.PI/360)
         .endAngle(arcWidth*Math.PI/360);
 
     var clusters = graph.treeRoot.children; // cereals
     var arcCluster =  d3.svg.arc()
-        .innerRadius(ry-60)
-        .outerRadius(ry-40)
+        .innerRadius(ry-40)
+        .outerRadius(ry-20)
         .startAngle(function(d){
             return  d.children[0].x * Math.PI/180;
         })
         .endAngle(function(d){
-            console.log(d);
             return  d.children[d.children.length-1].x * Math.PI/180;
         });
 
@@ -1023,5 +1044,3 @@ function makeLegend(options) {
     var path = legendGraph.append("path").classed("legend", true);
     path.datum(linePoints).attr("d", lineGenerator);
 }
-
-
