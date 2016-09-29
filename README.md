@@ -7,49 +7,106 @@ The input is a JSON-file that could look like the following:
 
 ```json
 {
-  "interactions":[
-    {"name1":"TM3.ARG135", "name2":"TM3.ASP134", "frames":[0,1,2,3,4,6,7,8,9]},
-    {"name1":"TM3.ASP134", "name2":"TM4.TRP161", "frames":[4,5,6,7]},
-    {"name1":"TM5.TYR223", "name2":"TM3.ARG135", "frames":[4,5,6,9]},
-    {"name1":"TM5.TYR223", "name2":"TM7.TYR306", "frames":[0,1,2,5,6,7,8]},
-    {"name1":"TM7.TYR306", "name2":"TM1.VAL54",  "frames":[1,4,5,6,7,8]}
+  "edges":[
+    {"name1":"ARG135", "name2":"ASP134", "frames":[0,1,2,3,4,6,7,8,9]},
+    {"name1":"ASP134", "name2":"TRP161", "frames":[4,5,6,7]},
+    {"name1":"TYR223", "name2":"ARG135", "frames":[4,5,6,9]},
+    {"name1":"TYR223", "name2":"TYR306", "frames":[0,1,2,5,6,7,8]},
+    {"name1":"TYR306", "name2":"VAL54",  "frames":[1,4,5,6,7,8]}
   ]
 }
 ```
       
-Here TM3.ARG135 and TM3.ASP134 interacts at times 0 to 4 and 6 to 9. Dot-separated names will be used to cluster vertices and can affect sorting.
+Here ARG135 and ASP134 interacts at times 0 to 4 and 6 to 9. Names are ordered alphabetically unless it is suffixed by a number in which case the number determines the order. 
 
 The input-json can contain three sections
- * interactions - a list of edge-definitions and the time-points in which they exist
- * nodes - a list of node property-definitions
- * defaults - an object that specifies default properties
+ * edges - a list of edge-definitions and the time-points in which they exist
+ * trees - a list of tree-definitions each indicating an ordering and grouping of the nodes
+ * tracks - a list of node-properties each indicating node color, weight and possibly annotation. 
+ * defaults - an object that specifies default properties of edges and nodes
 
-### Interactions
+### Edges
 This section has the format
 ```json
-  "interactions":[
+  "edges":[
     {"name1":<string>, "name2":<string>, "frames":<int-list>, "color":<string>, "width":<int>},
     ...
   ]
 ```
-The fields `name1`, `name2`, and `frames` are mandatory but the others are not. If no nodes are specified, the names specified will be collected and used as node-definitions. The `color` field follows CSS standards, so can be either `red`, `#FF0000`, `rgb(255,0,0)`.
+The fields `name1`, `name2`, and `frames` are mandatory but the others are not. If no `trees` or `tracks` are specified, the names used in the `edges` section will be collected and used as node-definitions. The `color` field follows CSS standards, so can be either `red`, `#FF0000`, `rgb(255,0,0)`.
 
 The edge-width is measured in pixels. 
 
-### Nodes
+### Trees
 This section has the format
 ```json
-  "nodes":[
-    {"name":<string>, "color":<string>},
+  "trees":[
+    { "treename":<string>, "paths":<string-list> },
+     ...
+  ]
+```
+Each tree has a name and a set of paths. Each "path" is a dot-separated list of branches in the path from the node to the root in a tree. This tree is used to order and group nodes. In the following example, `Asn1` and `Pro2` will be placed in the same group because theyre both children of `helix1` while `His3` will be placed in a separate group. 
+```json
+  "trees":[
+    { "treename":"Group-order",
+      "paths": [
+        "Root.helix1.Asn1",
+        "Root.helix1.Pro2",
+        "Root.helix2.His3"
+      ]
+    }
+  ]
+```
+
+### Tracks
+This section has the format
+```json
+  "tracks":[
+    { "trackname":<string>, 
+      "nodeproperties": [
+        {"nodename":<string>, "color":<string>, "size":<float>, "label":<string>},
+        ...
+      ]
+    }
     ...
   ]
 ```
 
-The `name` field specifies a dot-separated path from root to node which will determine the ordering in which nodes are placed on the circle. For example, given the names "TM1.1", "TM1.2", "TM2.1", "TM2.2" the two first will be placed near each other (as they are siblings with the parent named "TM1") and the two last will be placed near each other (as they are siblings with the parent named "TM2"). 
+Each track specifies visual cues for each of the nodes. If `color` is specified and `size` is non-zero a box will appear next to the node-label with the indicated color. The width of the box depends on the number of nodes around the flare-plot and the height of the box by the `size` parameter which should be a number between 0 and 1. 
 
-Siblings are sorted according to the last integer in their name.
+If `color` is not specified but `label` is, the track will contain a text-label. The node-labels are considered a special track which by default is enabled and placed closest to the center. This default can be overwritten by adding a special track named "nodelabels". In the following example, same-sized boxes will appear as the inner track and node-labels appear as the outer track
+```json
+  "tracks":[
+    { "trackname":"Boxes",
+      "nodeproperties":[
+        {"nodename":"Asn1", "color":"blue", "size":1.0},
+        {"nodename":"Pro2", "color":"blue", "size":1.0},
+        {"nodename":"His3", "color":"red",  "size":1.0}
+      ]
+    },
+    { "trackname":"nodelabels", 
+      "nodeproperties":[
+        {"nodename":"Asn1", "label":"Asn1"},
+        {"nodename":"Pro2", "label":"Pro2"},
+        {"nodename":"His3", "label":"His3"},
+      ]
+    }
+  ]
+```
+The `nodeproperties` entry is not required, so the above example could equivalently be written
+```json
+  "tracks":[
+    { "trackname":"Boxes",
+      "nodeproperties":[
+        {"nodename":"Asn1", "color":"blue", "size":1.0},
+        {"nodename":"Pro2", "color":"blue", "size":1.0},
+        {"nodename":"His3", "color":"red",  "size":1.0}
+      ]
+    },
+    { "trackname":"nodelabels" }
+  ]
+```
 
-The `color` field is non-mandatory and indicates the color of the wedge just outside the node label.
 
 ### Defaults
 This section has the format
