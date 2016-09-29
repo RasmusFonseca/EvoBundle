@@ -1,6 +1,6 @@
-# Time-evolving bundle plots 
+# Flareplots
 
-Bundle-plots illustrate contacts between grouped nodes and are useful for exploring interaction graphs. We have added a time-slider to illustrate the evolution of dynamically changing networks, and added circular layers of color-coded annotations.
+Flareplots illustrate contacts between grouped nodes and are useful for exploring interaction graphs. They have a time-slider to illustrate the evolution of dynamically changing networks and circular layers of color-coded annotations.
 
 ## Input format
 The input is a JSON-file that could look like the following:
