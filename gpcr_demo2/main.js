@@ -112,8 +112,8 @@ function create_bundle(rawText) {
     links = graph.frames;
     splines = bundle(links[0]);
 
-    // gros gag
-    spinesMap = {}
+    // not efficient, there must be a better way
+    splinesMap = {}
     links[0].forEach(function(link, index){
        splinesMap[link.name1 + '-' + link.name2] = index;
     });
@@ -606,7 +606,7 @@ var curFrame = 0;
 
 function setFrame(frame){
     if (summaryMode) {
-        return // make no sense to setFrame in summary mode
+        returnl; // make no sense to setFrame in summary mode
     }
     curFrame = frame;
     d3.select("span[id=timeLabel]")
@@ -637,6 +637,10 @@ function setFrame(frame){
         .attr("d", function(d, i) { return line(splines[i]); });
 
     path.exit().remove();
+    spinesMap = {}
+    links[frame].forEach(function(link, index){
+        splinesMap[link.name1 + '-' + link.name2] = index;
+    });
 
     curFrame = frame;
 }
