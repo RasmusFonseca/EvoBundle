@@ -230,9 +230,6 @@ function create_bundle(rawText) {
         selectClass =  'g:not(.cluster-' + clusterKey + ')';
         linksToHide = svg.selectAll(selectClass);
         linksToHide.transition().duration(500).style("opacity", "0.1");
-
-
-
         console.log('Should do something with', linksToHide);
     });
 
@@ -366,6 +363,9 @@ function create_bundle(rawText) {
         var newSplines;
         if (summaryMode) {
             newSplines = bundle(summaryLinks);
+            summaryLinks.forEach(function(link, index){
+                newSplinesMap[link.name1 + '-' + link.name2] = index;
+            });
         } else
         {
             links = graph.frames;
@@ -388,6 +388,7 @@ function create_bundle(rawText) {
                 var oldSpline = [];
                 var key = d.name1 + '-' + d.name2;
                 var index = splinesMap[key];
+                debugger;
                 var debug = false;
                 if (!splines[i]) {
                     console.log('No spline found for this index', i);
@@ -458,7 +459,7 @@ function create_bundle(rawText) {
                     recomposedOldSpline = oldSpline;
 
                 } else if (delta == -4) {
-                    console.log(oldSpline, simpleSpline, '-4');
+                    console.log(oldSpline, simpleSpline, '-4, this case should not happens');
                 } else {
                     console.log('CASE NOT HANDLED', delta);
                     recomposedOldSpline = oldSpline;
@@ -606,7 +607,7 @@ var curFrame = 0;
 
 function setFrame(frame){
     if (summaryMode) {
-        returnl; // make no sense to setFrame in summary mode
+        return; // make no sense to setFrame in summary mode
     }
     curFrame = frame;
     d3.select("span[id=timeLabel]")
@@ -637,7 +638,7 @@ function setFrame(frame){
         .attr("d", function(d, i) { return line(splines[i]); });
 
     path.exit().remove();
-    spinesMap = {}
+    splinesMap = {}
     links[frame].forEach(function(link, index){
         splinesMap[link.name1 + '-' + link.name2] = index;
     });
@@ -878,8 +879,11 @@ function transitionToSummary(){
         path.exit().transition().duration(2000)
             .style("stroke-width",function(d){ return 0; }).remove();
         summaryMode = !summaryMode;
-        removeLegend()
-
+        removeLegend();
+        splinesMap = {};
+        links[curFrame].forEach(function(link, index){
+            splinesMap[link.name1 + '-' + link.name2] = index;
+        });
         return;
     }
 
@@ -887,7 +891,6 @@ function transitionToSummary(){
     if(playing) { playpause(); }
 
     summaryMode = !summaryMode;
-    console.log(links[0]);
 
     //Initialize empty two-dim array
     var n = nodes.length;
@@ -924,7 +927,12 @@ function transitionToSummary(){
                 if (nodes[nd].idx == i) ndi = nodes[nd];
                 if (nodes[nd].idx == j) ndj = nodes[nd];
             }
-            summaryLinks.push( {"source":ndi, "target":ndj, "weight":countMatrix[i][j]} );
+            summaryLinks.push( {
+                "source":ndi,
+                "target":ndj,
+                "name1": ndi.name,
+                "name2": ndj.name,
+                "weight":countMatrix[i][j]} );
         }
     }
 
@@ -939,7 +947,7 @@ function transitionToSummary(){
         .range([0, legendMaxHeight]);
 
     D = countMatrix;
-    var splines = bundle(summaryLinks);
+    splines = bundle(summaryLinks);
 
     options = {
         width: 200,
@@ -953,7 +961,6 @@ function transitionToSummary(){
     path = svg.selectAll("path.link")
         .data(summaryLinks, function(d,i){
             var key = "source-" + d.source.key + "target-" + d.target.key;
-            console.log(key);
             return key;
         });
 
@@ -975,6 +982,11 @@ function transitionToSummary(){
         .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; });
 
     path.exit().remove();
+
+    splinesMap = {};
+    summaryLinks.forEach(function(link, index){
+        splinesMap[link.name1 + '-' + link.name2] = index;
+    });
 }
 
 function checkDuplicate(dicoA, dicoB) {
