@@ -24,6 +24,8 @@ var originalKeys;
 var toggledNodes = {};
 var originalText;
 
+var sortOnNodeValue = false;
+
 
 var splinesMap = {};
 
@@ -34,6 +36,12 @@ function create_bundle(rawText) {
     var cluster = d3.layout.cluster()
         .size([360, ry - 120])
         .sort(function(a, b) {
+
+
+            if (sortOnNodeValue) {
+                return d3.ascending(a.someValue, b.someValue);
+            }
+
             var aRes = a.key.match(/[0-9]*$/);
             var bRes = b.key.match(/[0-9]*$/);
             if(aRes.length==0 || bRes.length==0){
@@ -43,6 +51,7 @@ function create_bundle(rawText) {
                 aRes = parseInt(aRes[0]);
                 bRes = parseInt(bRes[0]);
             }
+
             if (!originalCluster) {
                 // we need to take the key into account
                 var aCluster = a.key.match(/^[0-9]*/);
@@ -52,7 +61,8 @@ function create_bundle(rawText) {
                 return d3.ascending(aCluster * 1000 + aRes, bCluster * 1000 + bRes);
             }
 
-            return d3.ascending(aRes, bRes); });
+            return d3.ascending(aRes, bRes);
+        });
 
     bundle = d3.layout.bundle();
 
@@ -89,6 +99,10 @@ function create_bundle(rawText) {
         transitionToSummary();
     });
 
+    d3.select(".sortButton").on("click", function() {
+        changeSortingOrder();
+    });
+
     //d3.json("interactionTimeline.json", function(classes) {
     //    console.log(classes);
     //  var nodes = cluster.nodes(genRoot(classes)),
@@ -104,6 +118,21 @@ function create_bundle(rawText) {
     originalKeys = graph.nodes.map(function(n){
         return n.name;
     });
+
+
+    /** This part computes the small out bar **/
+
+    var valueAssigned = [];
+    graph.nodes.forEach(function(n){
+        if (!n.children) {
+            // assign a random value to the node for the
+            n.someValue = Math.random()*90;
+            valueAssigned.push(n.someValue);
+        }
+    });
+
+    var extent = d3.extent(valueAssigned);
+    var pieBarScale = d3.scale.linear().domain(extent).range([0,20]);
 
     var clusterDefinition = parseCluster(clustering);
     if(json.defaults && json.defaults.color) stdEdgeColor = json.defaults.color;
@@ -145,24 +174,12 @@ function create_bundle(rawText) {
 
 
 
-    /** This part computes the small out bar **/
-
-    var valueAssigned = [];
-    nodes.forEach(function(n){
-        if (!n.children) {
-            // assign a random value to the node for the
-            n.someValue = Math.random()*90;
-            valueAssigned.push(n.someValue);
-        }
-    });
-    var extent = d3.extent(valueAssigned);
-    var pieBarScale = d3.scale.linear().domain(extent).range([0,20]);
 
     /********************************************/
 
 
     svg.selectAll("g.node")
-        .data(nodes.filter(function(n) { return !n.children; }))
+        .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key})
         .enter().append("svg:g")
         .attr("class", function(d){ return "node" + " cluster-"+ d.parent.key})
         .attr("id", function(d) { return "node-" + d.key; })
@@ -200,7 +217,7 @@ function create_bundle(rawText) {
         });
 
     svg.selectAll("g.nodeBar")
-        .data(nodes.filter(function(n) { return !n.children; }))
+        .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key})
         .enter().append("svg:g")
         .attr("class", function(d){ return "nodeBar" + " cluster-"+ d.parent.key})
         .attr("id", function(d) { return "nodeBar-" + d.key; })
@@ -329,7 +346,8 @@ function create_bundle(rawText) {
             var node = nodesMap[nodeKey];
             oldCoordinatesMap[nodeKey] = {
                 x : node.x,
-                y : node.y
+                y : node.y,
+                value: node.someValue
             }
         });
 
@@ -345,10 +363,93 @@ function create_bundle(rawText) {
             if (oldCoordinate) {
                 node.oldX = oldCoordinate.x;
                 node.oldY = oldCoordinate.y;
+                node.someValue = oldCoordinate.value;
             }
         });
 
     }
+
+
+    function changeSortingOrder() {
+        sortOnNodeValue = !sortOnNodeValue;
+        // we do like a cluster transition, but we know that the control points of the spline will not change,
+        // as nodes are reorganized inside cluster
+
+
+        // we just need to move nodes and links accordingly
+
+        nodes.forEach(function(n){
+            n.oldX = n.x;
+        });
+
+        nodes = cluster.nodes(graph.treeRoot);
+
+        // move links
+
+        // move nodes
+        var selection = svg.selectAll("g.node")
+            .data(nodes.filter(function(n) { return !n.children; }),  function(d){ return d.key});
+
+
+        // fix key problem, you shpuld use a key function there to fix issues
+        selection.select('text').attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+            .attr("dy", ".31em")
+            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+            .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
+
+        selection.transition().duration(900)
+            .attrTween("transform", function(d) {
+                var oldMatrix = "rotate(" + (d.oldX - 90) + ")translate(" + d.y + ")";
+                var newMatrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
+                return d3.interpolateString(oldMatrix, newMatrix);
+            });
+        selection.exit().remove();
+
+        var handle = svg.selectAll("g.nodeBar")
+            .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key});
+
+        // see https://bl.ocks.org/mbostock/5348789 for concurrent transitions,
+        // but i really find it bad... so i will no do it
+        handle.select("path").transition().duration(900).attr("transform", function(d) {
+            var newMatrix = "rotate(" + (d.x  ) + ")";
+            return newMatrix
+        });
+
+        var path = svg.selectAll("path.link");
+
+        // right now we use a map, keys are sourceKey-targetKey, values are the index in the new spline array
+        path.transition().attrTween("d",
+            function(d, i, a) {
+                // oldspline use oldX
+                // newspline use x
+                var key = d.name1 + '-' + d.name2;
+                var index = splinesMap[key];
+                var oldSpline = [];
+                for (var j = 0; j < splines[index].length; j++) {
+                    var s = Object.assign({}, splines[index][j]);
+                    // when we get back to old cluster, splines array is not updated
+                    // as we got NEW nodes in the graph array, so the x coordinate
+                    // is really the old coordinate in that case
+                    if (s.oldX) { s.x = s.oldX; }
+                    oldSpline.push(s);
+                }
+
+                var newSpline = splines[index].map(function(s) {
+                        return {x: s.x, y:s.y}}
+                );
+                var interpolate = d3.interpolate(oldSpline, newSpline);
+                return function(t) {
+
+                    return line(interpolate(t))
+                };
+
+            }
+
+
+        ).duration(900);
+    }
+
+
 
     function transitionToCluster() {
         originalCluster = !originalCluster;
@@ -388,7 +489,7 @@ function create_bundle(rawText) {
                 var oldSpline = [];
                 var key = d.name1 + '-' + d.name2;
                 var index = splinesMap[key];
-                debugger;
+
                 var debug = false;
                 if (!splines[i]) {
                     console.log('No spline found for this index', i);
@@ -859,6 +960,9 @@ function fireSummaryListeners(){
 var summaryLinks;
 
 var D;
+
+
+
 function transitionToSummary(){
     //links contains all the frames
     if (summaryMode) {
