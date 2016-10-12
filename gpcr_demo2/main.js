@@ -102,6 +102,9 @@ function create_bundle(rawText) {
     d3.select(".sortButton").on("click", function() {
         changeSortingOrder();
     });
+    d3.select(".sortWithoutButton").on("click", function() {
+        changeAbsoluteSortingOrder();
+    });
 
     //d3.json("interactionTimeline.json", function(classes) {
     //    console.log(classes);
@@ -451,15 +454,24 @@ function create_bundle(rawText) {
 
 
 
-    function transitionToCluster() {
+    function transitionToCluster(dontChangeCluster) {
         originalCluster = !originalCluster;
-        if (!originalCluster) {
-            assignCluster(clusterDefinition, graph);
-            fireClusterListeners(true);
+
+        if (!dontChangeCluster) {
+            if (!originalCluster) {
+                assignCluster(clusterDefinition, graph);
+                fireClusterListeners(true);
+            } else {
+                resetClustering();
+                fireClusterListeners(false);
+            }
         } else {
-            resetClustering();
-            fireClusterListeners(false);
+            if (!sortOnNodeValue) {
+                resetClustering();
+                fireClusterListeners(false);
+            }
         }
+
         // brute-force approach, there may be an incremental way to do it
         var newSplines;
         if (summaryMode) {
@@ -642,6 +654,40 @@ function create_bundle(rawText) {
             });
 
     }
+
+
+
+
+
+    function changeAbsoluteSortingOrder() {
+        sortOnNodeValue = !sortOnNodeValue;
+        assignSimpleCluster(graph);
+        transitionToCluster(true);
+    }
+
+
+    /**
+     *
+     * we generate a clustering with a rooot node
+     *
+     * @param graph
+     */
+    function assignSimpleCluster(graph) {
+        var filteredNodes = nodes.filter(function(n) { return !n.children; });
+        var nodesMap = graph.nodeMap;
+        var tempNodes = [];
+        var root = nodesMap[""];
+        root.children = [];
+        filteredNodes.forEach(function(node){
+            node.oldX = node.x;
+            node.parent = root;
+            node.clusterKey = '';
+            tempNodes.push(node);
+            root.children.push(node);
+        });
+        graph.nodes = tempNodes;
+    }
+
     /**
      *
      * @param clusterDefinition {}
@@ -839,6 +885,7 @@ function mousemove() {
 }
 
 function mouseup() {
+    return;
     if (m0) {
         var m1 = mouse(d3.event),
             dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
