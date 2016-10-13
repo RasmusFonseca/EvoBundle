@@ -226,6 +226,8 @@ function create_bundle(rawText) {
         .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
         .attr("d", arc);
 
+
+    /* we dont display cluster bar right now
     var clusterBars = svg.selectAll("g.clusterBar")
         .data(clusters)
         .enter().append("svg:g")
@@ -236,7 +238,7 @@ function create_bundle(rawText) {
         .style("fill", function(d){ return d.children[0].color ? d.children[0].color:"white"; })
         .style("stroke-width", "2px")
         .style("stroke", "black")
-        .attr("d", arcCluster);
+        .attr("d", arcCluster);*/
 
     clusterBars.on("click", function(d){
         var clusterKey = d.key;
