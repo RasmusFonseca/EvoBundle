@@ -392,8 +392,7 @@ function create_bundle(rawText) {
         // move nodes
         var selection = svg.selectAll("g.node")
             .data(nodes.filter(function(n) { return !n.children; }),  function(d){ return d.key});
-
-
+        
         // fix key problem, you shpuld use a key function there to fix issues
         selection.select('text').attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
             .attr("dy", ".31em")
