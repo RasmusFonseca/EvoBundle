@@ -89,7 +89,6 @@ function create_bundle(rawText) {
     svg.append("svg:path")
         .attr("class", "arc")
         .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
-        .on("mousedown", mousedown);
 
     d3.select(".switchButton").on("click", function() {
         transitionToCluster();
@@ -193,8 +192,6 @@ function create_bundle(rawText) {
         .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
         .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
         .text(function(d) { return d.key; })
-        .on("mouseover", mouseoverNode)
-        .on("mouseout", mouseoutNode)
         .on("click", toggleNode);
 
     var arcWidth = 300.0/graph.nodes.length;
@@ -270,11 +267,6 @@ function create_bundle(rawText) {
     d3.select("input[id=timeRange]")
         .attr("max", links.length-1)
         .on("input", function(){fireTickListeners(this.value);} );
-
-
-    d3.select(window)
-        .on("mousemove", mousemove)
-        .on("mouseup", mouseup);
 
     //Set up controls
     var ch = 35,
@@ -871,42 +863,6 @@ function mouse(e) {
     return [e.pageX - rx, e.pageY - ry];
 }
 
-function mousedown() {
-    m0 = mouse(d3.event);
-    d3.event.preventDefault();
-}
-
-function mousemove() {
-    if (m0) {
-        var m1 = mouse(d3.event),
-            dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
-        div.style("-webkit-transform", "translateY(" + (ry - rx) + "px)rotateZ(" + dm + "deg)translateY(" + (rx - ry) + "px)");
-    }
-}
-
-function mouseup() {
-    return;
-    if (m0) {
-        var m1 = mouse(d3.event),
-            dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
-
-        rotate += dm;
-        if (rotate > 360) rotate -= 360;
-        else if (rotate < 0) rotate += 360;
-        m0 = null;
-
-        div.style("-webkit-transform", null);
-
-        svg
-            .attr("transform", "translate(" + rx + "," + ry + ")rotate(" + rotate + ")")
-            .selectAll("g.node text")
-            .attr("dx", function(d) { return (d.x + rotate) % 360 < 180 ? 8 : -8; })
-            .attr("text-anchor", function(d) { return (d.x + rotate) % 360 < 180 ? "start" : "end"; })
-            .attr("transform", function(d) { return (d.x + rotate) % 360 < 180 ? null : "rotate(180)"; });
-    }
-}
-
-
 function mouseoverNode(d) {
     svg.selectAll("path.link.target-" + d.key)
         .classed("target", true)
@@ -1087,6 +1043,8 @@ function transitionToSummary(){
         }
     }
 
+
+
     var summaryLinksExtent = d3.extent(summaryLinks, function(d) {
         return d.weight;
     });
@@ -1106,7 +1064,9 @@ function transitionToSummary(){
         minValue:0,
         maxValue: Math.floor(summaryLinksExtent[1] / 1000)
     };
-    makeLegend(options);
+
+    //TODO(chab) make a better leged
+    //makeLegend(options);
 
 
     path = svg.selectAll("path.link")
