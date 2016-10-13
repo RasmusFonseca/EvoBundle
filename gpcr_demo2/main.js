@@ -250,7 +250,7 @@ function create_bundle(rawText) {
         linksToHide = svg.selectAll(selectClass);
         linksToHide.transition().duration(500).style("opacity", "0.1");
         console.log('Should do something with', linksToHide);
-    });
+    });*/
 
 
     // we assume we only have a clustering with one level !!
