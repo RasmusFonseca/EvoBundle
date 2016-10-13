@@ -1,6 +1,7 @@
-//TODO (put d3 in source code)
-//TODO (check if the bug of disappearing links is due to the addition of a key function)
-//TODO (finish legend)
+// hightlight links
+// highlight tracks
+
+
 
 var clustering = 'LigandPocket: "2.2x51 2.2x53 2.2x56 2.2x57 2.2x60 2.2x61 2.2x63 2.2x64 2.2x65 3.3x28 3.3x29 3.3x32 3.3x33 3.3x36 3.3x37 3.3x40 4.4x56 4.4x57 4.4x59 4.4x60 4.4x61 5.5x38 5.5x39 5.5x42 5.5x43 5.5x44 5.5x45 5.5x46 5.5x461 5.5x47 6.6x44 6.6x45 6.6x48 6.6x51 6.6x52 6.6x54 6.6x55 6.6x58 6.6x59 7.7x30 7.7x31 7.7x32 7.7x33 7.7x34 7.7x35 7.7x36 7.7x37 7.7x38 7.7x39 7.7x40 7.7x41 7.7x42 7.7x43 7.7x44" GproteinPocket: "3.3x50 3.3x53 3.3x54 3.3x55 5.5x61 5.5x64 6.6x33 6.6x36 6.6x37"'
 //5x58 -> 7x53 disappears
@@ -983,9 +984,9 @@ function transitionToSummary(){
                 ret+=" toggled";
             return ret;
         });
-        path.transition().duration(2000).style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; });
+        path.transition().duration(800).style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; });
 
-        path.exit().transition().duration(2000)
+        path.exit().transition().duration(800)
             .style("stroke-width",function(d){ return 0; }).remove();
         summaryMode = !summaryMode;
         removeLegend();
@@ -1090,7 +1091,7 @@ function transitionToSummary(){
         return ret;
     })
         .attr("d", function(d, i) { return line(splines[i]); })
-        .transition().duration(2000)
+        .transition().duration(800)
         .style("stroke-width",function(d){ return linkWidthScale(d.weight) })
         .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; });
 

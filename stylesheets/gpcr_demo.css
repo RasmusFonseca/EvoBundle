@@ -104,3 +104,17 @@ section{
 .main-description {
     margin: 0 10% 0 10%;
 }
+
+.buttonBox {
+    width: 682px;
+}
+
+.fr {
+    float:right;
+    margin-left:5px;
+    margin-right:5px
+}
+
+.summaryButton {
+    margin-left: 116px;
+}

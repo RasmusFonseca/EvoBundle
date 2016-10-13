@@ -1,3 +1,8 @@
+// highlight the nodes
+// highlight the links
+
+
+
 
 var w = 800,
   h   = 800,
@@ -70,7 +75,7 @@ function create_bundle(rawText) {
 
   //var classes = d3.csv.parseRows(rawText)
   //  .map(function(d){return {rawArr:d}; });
-  var json = JSON.parse(rawText);
+  var json = rawText;
   graph = parse(json);
 
   if(json.defaults && json.defaults.color) stdEdgeColor = json.defaults.color;
