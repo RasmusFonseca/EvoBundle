@@ -10,6 +10,11 @@ path.arc {
     cursor: pointer;
 }
 
+.nodeBar > path:hover {
+    stroke: black;
+    stroke-width: 1px;
+}
+
 .node:hover {
     fill: #1f77b4;
 }
