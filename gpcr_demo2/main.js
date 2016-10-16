@@ -26,6 +26,8 @@ var toggledNodes = {};
 var originalText;
 
 var sortOnNodeValue = false;
+var trackWidth = 10;
+var trackMode = false;
 
 
 var splinesMap = {};
@@ -105,6 +107,10 @@ function create_bundle(rawText) {
     d3.select(".sortWithoutButton").on("click", function() {
         changeAbsoluteSortingOrder();
     });
+    d3.select(".trackButton").on("click", function(){
+        changeTrack();
+    });
+
 
     //d3.json("interactionTimeline.json", function(classes) {
     //    console.log(classes);
@@ -202,9 +208,13 @@ function create_bundle(rawText) {
     var innerRadius = ry - 80;
 
     var arc = d3.svg.arc()
-        .innerRadius(function() { return ry-80})
+        .innerRadius(function() { return ry - 80})
         .outerRadius(function(d){
-            return ry - 60 - pieBarScale(d.someValue);
+            if (trackMode) {
+                return ry - 60 - pieBarScale(d.someValue);
+            } else {
+                return ry - 60 - trackWidth;
+            }
         })
         .startAngle(-arcWidth*Math.PI/360)
         .endAngle(arcWidth*Math.PI/360);
@@ -368,6 +378,14 @@ function create_bundle(rawText) {
             }
         });
 
+    }
+
+    function changeTrack() {
+        trackMode = !trackMode;
+        svg.selectAll("g.nodeBar")
+            .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key})
+            .selectAll("path")
+            .transition().duration(300).attr("d", arc);
     }
 
 
