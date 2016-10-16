@@ -149,7 +149,7 @@
         }
 
         function loadExample(fileName){
-            d3.text(fileName, function(rawtext){
+            d3.json(fileName, function(rawtext){
                 load_dataset(rawtext);
             });
         }
