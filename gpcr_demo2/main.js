@@ -193,7 +193,9 @@ function create_bundle(rawText) {
         .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
         .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
         .text(function(d) { return d.key; })
-        .on("click", toggleNode);
+        .on("click", toggleNode)
+        .on("mouseover", mouseoverNode)
+        .on("mouseout", mouseoutNode);
 
     var arcWidth = 300.0/graph.nodes.length;
     var innerRadius = ry - 80;
