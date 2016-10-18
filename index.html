@@ -147,6 +147,9 @@
             d3.select("section.main-upload").style("display", "none");
             create_bundle(json);
         }
+        function load_rawtext_dataset(text) {
+          load_dataset(JSON.parse(text));
+        }
 
         function loadExample(fileName){
             d3.json(fileName, function(rawtext){
@@ -154,7 +157,8 @@
             });
         }
 
-        upload_button("uploader", load_dataset);
+        //upload_button("uploader", load_dataset);
+        upload_button("uploader", load_rawtext_dataset);
 
     </script>
 </section>
