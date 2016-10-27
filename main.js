@@ -2,8 +2,6 @@
 //TODO (check if the bug of disappearing links is due to the addition of a key function)
 //TODO (finish legend)
 
-var clustering = 'LigandPocket: "2.2x51 2.2x53 2.2x56 2.2x57 2.2x60 2.2x61 2.2x63 2.2x64 2.2x65 3.3x28 3.3x29 3.3x32 3.3x33 3.3x36 3.3x37 3.3x40 4.4x56 4.4x57 4.4x59 4.4x60 4.4x61 5.5x38 5.5x39 5.5x42 5.5x43 5.5x44 5.5x45 5.5x46 5.5x461 5.5x47 6.6x44 6.6x45 6.6x48 6.6x51 6.6x52 6.6x54 6.6x55 6.6x58 6.6x59 7.7x30 7.7x31 7.7x32 7.7x33 7.7x34 7.7x35 7.7x36 7.7x37 7.7x38 7.7x39 7.7x40 7.7x41 7.7x42 7.7x43 7.7x44" GproteinPocket: "3.3x50 3.3x53 3.3x54 3.3x55 5.5x61 5.5x64 6.6x33 6.6x36 6.6x37"'
-//5x58 -> 7x53 disappears
 
 var w = 800,
     h   = 800,
@@ -11,6 +9,30 @@ var w = 800,
     ry  = h / 2,
     m0,
     rotate = 0;
+
+var cluster = d3.layout.cluster()
+  .size([360, ry - 120])
+  .sort(function(a, b) {
+    var aRes = a.key.match(/[0-9]*$/);
+    var bRes = b.key.match(/[0-9]*$/);
+    if(aRes.length==0 || bRes.length==0){
+      aRes = a.key;
+      bRes = b.key;
+    }else{
+      aRes = parseInt(aRes[0]);
+      bRes = parseInt(bRes[0]);
+    }
+    if (!originalCluster) {
+      // we need to take the key into account
+      var aCluster = a.key.match(/^[0-9]*/);
+      var bCluster = b.key.match(/^[0-9]*/);
+      aCluster = parseInt(aCluster[0]);
+      bCluster = parseInt(bCluster[0]);
+      return d3.ascending(aCluster * 1000 + aRes, bCluster * 1000 + bRes);
+    }
+
+    return d3.ascending(aRes, bRes); 
+  });
 
 //var stdEdgeColor = "#1f77b4";
 var stdEdgeColor = "rgba(0,0,0,200)";
@@ -21,41 +43,21 @@ var summaryMode = false;
 
 var originalCluster = true;
 var originalKeys;
+var selectedTree = 0;
+var selectedTrack = 0;
 var toggledNodes = {};
 var originalText;
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
-    originalText = rawText;
-    var cluster = d3.layout.cluster()
-        .size([360, ry - 120])
-        .sort(function(a, b) {
-            var aRes = a.key.match(/[0-9]*$/);
-            var bRes = b.key.match(/[0-9]*$/);
-            if(aRes.length==0 || bRes.length==0){
-                aRes = a.key;
-                bRes = b.key;
-            }else{
-                aRes = parseInt(aRes[0]);
-                bRes = parseInt(bRes[0]);
-            }
-            if (!originalCluster) {
-                // we need to take the key into account
-                var aCluster = a.key.match(/^[0-9]*/);
-                var bCluster = b.key.match(/^[0-9]*/);
-                aCluster = parseInt(aCluster[0]);
-                bCluster = parseInt(bCluster[0]);
-                return d3.ascending(aCluster * 1000 + aRes, bCluster * 1000 + bRes);
-            }
+  originalText = rawText;
 
-            return d3.ascending(aRes, bRes); });
+  bundle = d3.layout.bundle();
 
-    bundle = d3.layout.bundle();
-
-    line = d3.svg.line.radial()
-        .interpolate("bundle")
-        .tension(.85)
-        .radius(function(d) { return d.y; })
-        .angle(function(d) { return d.x / 180 * Math.PI; });
+  line = d3.svg.line.radial()
+    .interpolate("bundle")
+    .tension(.85)
+    .radius(function(d) { return d.y; })
+    .angle(function(d) { return d.x / 180 * Math.PI; });
 
     d3.select("#evobundlediv").style("position","relative");
 
@@ -96,15 +98,16 @@ function create_bundle(rawText) {
     //  .map(function(d){return {rawArr:d}; });
     var json = JSON.parse(rawText);
     graph = parse(json);
-    originalKeys = graph.nodes.map(function(n){
-        return n.name;
-    });
 
-    var clusterDefinition = parseCluster(clustering);
-    if(json.defaults && json.defaults.color) stdEdgeColor = json.defaults.color;
-    if(json.defaults && json.defaults.width) stdEdgeWidth = json.defaults.width;
-    nodes = cluster.nodes(graph.treeRoot);
-    links = graph.frames;
+    //originalKeys = graph.nodes.map(function(n){
+    //    return n.name;
+    //});
+
+    //var clusterDefinition = parseCluster(clustering);
+    //if(json.defaults && json.defaults.color) stdEdgeColor = json.defaults.color;
+    //if(json.defaults && json.defaults.width) stdEdgeWidth = json.defaults.width;
+    nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
+    links = graph.trees[selectedTree].frames;
     splines = bundle(links[0]);
 
     var path = svg.selectAll("path.link")
@@ -140,7 +143,7 @@ function create_bundle(rawText) {
         .on("mouseout", mouseoutNode)
         .on("click", toggleNode);
 
-    var arcWidth = 300.0/graph.nodes.length;
+    var arcWidth = 300.0/graph.nodeNames.length;
     var arc = d3.svg.arc()
         .innerRadius(ry-80)
         .outerRadius(ry-70)
@@ -235,8 +238,6 @@ function create_bundle(rawText) {
         .style("line-height", ch+"px")
         .style("height", ch+"px")
         .style("bottom", "13px");
-
-    makeLegend( );
 
     function resetClustering() {
         // we use the initial ordering of key
@@ -514,7 +515,7 @@ function setFrame(frame){
     path = svg.selectAll("path.link")
         .data(links[frame], function(d,i){ return "source-" + d.source.key + "target-" + d.target.key;});//, function(d){ return {source:d.source, target:d.target}; });
 
-    path.enter().append("svg:path")
+    path.enter().append("path")
         .attr("class", function(d) {
             var ret = "link source-" + d.source.key + " target-" + d.target.key;
             if( d.source.key in toggledNodes || d.target.key in toggledNodes)
@@ -678,6 +679,41 @@ function updateNodes(name, value) {
     };
 }
 
+function getTreeNames(){
+  var ret = [];
+  console.log(graph);
+  for ( t in graph.trees ){
+    ret.push(graph.trees[t].treeLabel);
+  }
+  return ret;
+}
+
+function setTree(treeIdx){
+  selectedTree = treeIdx;
+
+  nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
+  links = graph.trees[selectedTree].frames;
+  splines = bundle(links[curFrame]);
+  
+  var path = svg.selectAll("path.link")
+    .data(links[curFrame], function(d,i){
+      return "source-" + d.source.key + "target-" + d.target.key;
+    })
+    .transition()
+    .attr("d", function(d, i) { return line(splines[i]); });
+
+  svg.selectAll("g.node")
+    .data(nodes.filter(function(n) { return !n.children; }))
+    .transition()
+    .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+    .select("text")
+    .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+    .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+    .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; });
+
+}
+
+
 function cross(a, b) {
     return a[0] * b[1] - a[1] * b[0];
 }
@@ -834,15 +870,6 @@ function transitionToSummary(){
     D = countMatrix;
     var splines = bundle(summaryLinks);
 
-    options = {
-        width: 200,
-        height: legendMaxHeight,
-        minValue:0,
-        maxValue: Math.floor(summaryLinksExtent[1] / 1000)
-    };
-    makeLegend(options);
-
-
     path = svg.selectAll("path.link")
         .data(summaryLinks, function(d,i){
             var key = "source-" + d.source.key + "target-" + d.target.key;
@@ -870,76 +897,6 @@ function transitionToSummary(){
     path.exit().remove();
 }
 
-function checkDuplicate(dicoA, dicoB) {
-    dicoA.forEach(function(key) {
-        if (dicoB[key]) {
-            console.log(key, 'is here');
-        } else {
-            console.log(key, 'Absent from', dicoB);
-        }
-    })
-}
 
-
-// width legend                   (0,0)           - (maxWidhth, 0)
-//                                               --
-//                                            -----
-//                                         --------
-// x axis on the bottom (0,legendHeight) ---------- (maxwidth, legendHeight )
-// SVG PATH would be   M 0 <LH>  L <MX> <LH> L <MW> 0 L <MW> <LH>
-
-function removeLegend() {
-    svg.select(".legendChart").remove();
-}
-
-function makeLegend(options) {
-
-    // remove old legend
-    removeLegend();
-
-    var lineGenerator = d3.svg.line()
-        .x(function(d) { return d.x; })
-        .y(function(d) { return d.y; })
-        .interpolate("linear");
-
-
-    var topX = 0, topY= 0, width = options.width, height = options.height,
-        minValue = options.minValue, maxValue = options.maxValue
-
-
-    var axisXScale = d3.scale.linear()
-        .domain([options.minValue, options.maxValue])
-        .range([0, options.width]);
-
-    var xAxis = d3.svg.axis().scale(axisXScale).tickSize(1);
-
-
-    var linePoints = [
-        {x:0, y:height},
-        {x:width, y:height},
-        {x:width, y:0},
-        {x:0, y:height }
-    ];
-
-    // main leged
-
-   //
-
-    var xOrigin = 180;
-    var yOrigin = 250;
-    var axisPadding = 10;
-    // add axis
-
-    var legendGraph = svg.append("g")
-        .attr("class","legendChart")
-        .attr("transform", "translate(" + xOrigin+ "," + yOrigin + ")");
-
-    legendGraph.append("g")
-        .attr("class", "x axis")
-        .attr("transform", "translate(0," + (axisPadding + height) + ")")
-        .call(xAxis);
-    var path = legendGraph.append("path").classed("legend", true);
-    path.datum(linePoints).attr("d", lineGenerator);
-}
 
 

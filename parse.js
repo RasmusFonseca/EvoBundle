@@ -1,3 +1,4 @@
+
 /**
  * Parse a graph and return the same reference but with additional fields:
  *
@@ -41,15 +42,16 @@ function parse(graph){
   console.log(graph.nodeNames);
 
   // =========== Parse `trees` section ========== \\
-
-  function addToMap(nodeMap, name, data) {
-    var node = nodeMap[name], i;
+  function addToMap(nodeMap, fullName) {
+    var i = fullName.lastIndexOf(".");
+    var name = fullName.substring(i+1);
+    var node = nodeMap[name];
     if (!node) {
-      node = nodeMap[name] = data || {name: name, children: []};
+      node = nodeMap[name] = {name: name, children: []};
       if (name.length) {
-        node.parent = addToMap(nodeMap, name.substring(0, i = name.lastIndexOf(".")));
+        node.parent = addToMap(nodeMap, fullName.substring(0, i));
         node.parent.children.push(node);
-        node.key = name.substring(i + 1);
+        node.key = name;
       }
     }
     return node;
@@ -57,42 +59,52 @@ function parse(graph){
 
   graph.trees.forEach(function(t){ 
     var addedNames = [];
+    //Ensure that each tree-object has a `tree` attribute with the hierarchy
     t.tree = {};
     t.treePaths.forEach(function(p){
-      addToMap(t.tree, p, {"name":p});
+      addToMap(t.tree, p);
       addedNames.push(p.substring(p.lastIndexOf(".")+1));
     });
 
     //Ensure that even nodes not mentioned in the treePaths are added to the tree
     graph.nodeNames.forEach(function(p){
       if( addedNames.indexOf(p)==-1 ){
-        addToMap(t.tree, p, {"name":p});
+        addToMap(t.tree, p);
       }
     });
   });
 
-  // =========== Parse `tracks` section ========== \\
 
-  //TODO
+  // =========== Parse `tracks` section ========== \\
 
   //Go through graph.edges and convert name1, name2, and frames to target and source object arrays
   graph.frames = [];
 
-  graph.edges.forEach(function(edge,i){
+  graph.trees.forEach(function(t){
+    t.frames = [];
+    graph.edges.forEach(function(e,i){
       //Set source and target of edge
-      edge.source = nodeMap[edge.name1];
-      edge.target = nodeMap[edge.name2];
-      edge.key = ""+i;
+      var edge = {
+        source : t.tree[e.name1],
+        target : t.tree[e.name2],      
+        key    : ""+i,
+        color  : e.color || graph.defaults.edgeColor || "rgba(100,100,100,100)",
+        width  : e.width || graph.defaults.edgeWidth || 1
+      };
+      //edge.source = t.tree[edge.name1]; console.assert(edge.source);
+      //edge.target = t.tree[edge.name2]; console.assert(edge.target);
+      //edge.key = ""+i;
+
 
       //Add interaction frames
-      edge.frames.forEach(function(f){
-        while(graph.frames.length<=f) graph.frames.push([]);
+      e.frames.forEach(function(f){
+        while(t.frames.length<=f) t.frames.push([]);
 
-        graph.frames[f].push(edge);
+        t.frames[f].push(edge);
       });
     });
+  });
 
-  console.log(graph.edges);
 
   return graph;
 }
