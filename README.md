@@ -122,11 +122,11 @@ The following outlines an API for developers wishing to incorporate a flareplot 
 ```html
 <html>
 <head>
-<script src="d3.js">
-<script src="flareplot.js">
+<script src="d3.js" />
+<script src="flareplot.js" />
 </head>
 <body>
-    <div id="evobundlediv"> </div>
+    <div id="evobundlediv"></div>
     <script> 
       load_dataset("...");
     </script>
