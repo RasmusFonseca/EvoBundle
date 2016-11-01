@@ -114,3 +114,34 @@ This section has the format
   "defaults":{"color":<string>, "width":<int>}
 ```
 where none of the fields are mandatory, but if specified they set edge-defaults. When a node is selected, the adjacent interactions are highlighted by removing the transparency. The default color should therefore ideally have a bit of transparency, which can be specified using e.g. `rgba(255,0,0,100)`. 
+
+
+# Developer API
+
+The following outlines an API for developers wishing to incorporate a flareplot on a homepage. The general template should be 
+```html
+<html>
+<head>
+<script src="d3.js">
+<script src="flareplot.js">
+</head>
+<body>
+    <div id="evobundlediv"> </div>
+    <script> 
+      load_dataset("...");
+    </script>
+</body>
+</html>
+```
+Where `...` contains a json file with the format specified above.
+
+The following functions are available after a dataset has been loaded:
+  * `getTrees()` - Returns list of tree-names
+  * `setTree(t)` - Updates the ordering of nodes to reflect the tree with index `t`
+  * `getTracks()` - Returns list of track-names
+  * `setTrack(t)` - Updates the node colors/annotation to reflect the track with index `t`
+  * `addTickListener(l)` - Add a callback function, `l`, that gets invoked whenever the time-frame changes. This function must take 2 arguments. The first will be the current frame-number, and the second will be a list of tuples indicating 1) name of first and second node, 2) edge color, and 3) edge width.
+  * `addNodeToggleListener(l)` - 
+  * `addNodeHoverListener(l)` - 
+  * `addEdgeToggleListener(l)` - 
+  * `addEdgeHoverListener(l)` - 
