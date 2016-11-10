@@ -36,6 +36,8 @@ var clusterSortEnabled = false, wholeChartSortEnabled = false;
 var splinesMap = {};
 
 var newSplinesMap = {};
+
+
 // create a table with column headers, types, and data
 function create_bundle(rawText) {
     originalText = rawText;
@@ -349,6 +351,7 @@ function create_bundle(rawText) {
         .style("height", ch+"px")
         .style("bottom", "13px");
 
+    changeButton();
     //makeLegend( );
 
     function resetClustering() {
@@ -389,7 +392,25 @@ function create_bundle(rawText) {
             .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key})
             .selectAll("path")
             .transition().duration(300).attr("d", arc);
+        changeButton();
     }
+
+    function changeButton() {
+        function evaluateButton() {
+            if (trackMode) return null;
+            return true;
+        }
+        function evaluateOpacity() {
+            return trackMode ? 1 : 0.5;
+        }
+
+        d3.select(".sortButton").attr('disabled', evaluateButton);
+        d3.select(".sortWithoutButton").attr('disabled', evaluateButton);
+        d3.select(".sortButton").style("opacity", evaluateOpacity);
+        d3.select(".sortWithoutButton").style("opacity", evaluateOpacity);
+    }
+
+
 
 
     function changeSortingOrder() {
@@ -408,7 +429,7 @@ function create_bundle(rawText) {
             sortOnNodeValue = !sortOnNodeValue;
             clusterSortEnabled = !clusterSortEnabled;
         }
-        debugger;
+        //debugger;
         // we do like a cluster transition, but we know that the control points of the spline will not change,
         // as nodes are reorganized inside cluster
         // if we are already sorting on whole chart, sort on cluster
@@ -489,6 +510,8 @@ function create_bundle(rawText) {
 
     // things are now complicated, due to the fact that we have a 'third' clustering, ie
     // when we sort on the whole 'tracks' we do not take cluster into account anymore
+
+    // we return to no-sorting when we switch clustering
     function transitionToCluster(dontChangeCluster) {
 
         if (!dontChangeCluster) {
@@ -496,6 +519,10 @@ function create_bundle(rawText) {
         }
 
         if (!dontChangeCluster) {
+            if (wholeChartSortEnabled) {
+                wholeChartSortEnabled = false;
+                clusterSortEnabled = sortOnNodeValue = true;
+            }
             if (!originalCluster) {
                 assignCluster(clusterDefinition, graph);
                 fireClusterListeners(true);
