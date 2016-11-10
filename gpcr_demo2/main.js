@@ -538,6 +538,8 @@ function create_bundle(rawText) {
                     assignCluster(clusterDefinition,graph);
                 }
                 fireClusterListeners(false);
+            } else {
+                fireClusterListeners(false);
             }
         }
 

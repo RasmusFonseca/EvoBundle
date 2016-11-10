@@ -123,3 +123,6 @@ section{
 .summaryButton {
     margin-left: 116px;
 }
+.buttonVerticalGroup {
+    display: block;
+}
