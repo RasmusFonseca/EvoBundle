@@ -30,6 +30,9 @@ var trackWidth = 10;
 var trackMode = false;
 
 
+var clusterSortEnabled = false, wholeChartSortEnabled = false;
+
+
 var splinesMap = {};
 
 var newSplinesMap = {};
@@ -390,10 +393,25 @@ function create_bundle(rawText) {
 
 
     function changeSortingOrder() {
-        sortOnNodeValue = !sortOnNodeValue;
+        if (wholeChartSortEnabled) {
+            wholeChartSortEnabled = false;
+            sortOnNodeValue = clusterSortEnabled = true;
+            // in that case we need to re-enable the original clustering
+            if (originalCluster) {
+                resetClustering()
+            } else {
+                assignCluster(clusterDefinition, graph);
+            }
+            transitionToCluster(true);
+            return;
+        } else {
+            sortOnNodeValue = !sortOnNodeValue;
+            clusterSortEnabled = !clusterSortEnabled;
+        }
+        debugger;
         // we do like a cluster transition, but we know that the control points of the spline will not change,
         // as nodes are reorganized inside cluster
-
+        // if we are already sorting on whole chart, sort on cluster
 
         // we just need to move nodes and links accordingly
 
@@ -469,9 +487,13 @@ function create_bundle(rawText) {
     }
 
 
-
+    // things are now complicated, due to the fact that we have a 'third' clustering, ie
+    // when we sort on the whole 'tracks' we do not take cluster into account anymore
     function transitionToCluster(dontChangeCluster) {
-        originalCluster = !originalCluster;
+
+        if (!dontChangeCluster) {
+            originalCluster = !originalCluster;
+        }
 
         if (!dontChangeCluster) {
             if (!originalCluster) {
@@ -483,7 +505,11 @@ function create_bundle(rawText) {
             }
         } else {
             if (!sortOnNodeValue) {
-                resetClustering();
+                if (originalCluster) {
+                    resetClustering();
+                } else {
+                    assignCluster(clusterDefinition,graph);
+                }
                 fireClusterListeners(false);
             }
         }
@@ -528,7 +554,7 @@ function create_bundle(rawText) {
                     // when we get back to old cluster, splines array is not updated
                     // as we got NEW nodes in the graph array, so the x coordinate
                     // is really the old coordinate in that case
-                    if (s.oldX && !originalCluster) { s.x = s.oldX; }
+                    if (s.oldX && (!originalCluster || wholeChartSortEnabled)) { s.x = s.oldX; }
                     oldSpline.push(s);
                 }
 
@@ -657,7 +683,11 @@ function create_bundle(rawText) {
             .delay(function(d,i){return 900+i;})
             .duration(900).style("fill", function(d){
                 if (originalCluster) {
-                    return ("color" in d)?d.color:stdEdgeColor;
+                    if (!wholeChartSortEnabled) {
+                        return ("color" in d)?d.color:stdEdgeColor;
+                    }
+                    return 'grey'
+
                 } else {
                     if (d.clusterKey === 'LigandPocket: ') {
                         return 'cyan';
@@ -676,8 +706,17 @@ function create_bundle(rawText) {
 
 
     function changeAbsoluteSortingOrder() {
-        sortOnNodeValue = !sortOnNodeValue;
-        assignSimpleCluster(graph);
+        // if we are already sorting on whole chart, sort on cluster
+        if (clusterSortEnabled) {
+            clusterSortEnabled = false;
+            sortOnNodeValue = wholeChartSortEnabled = true;
+        } else {
+            sortOnNodeValue = !sortOnNodeValue;
+            wholeChartSortEnabled = sortOnNodeValue;
+        }
+        if (wholeChartSortEnabled) {
+            assignSimpleCluster(graph);
+        }
         transitionToCluster(true);
     }
 
