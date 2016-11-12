@@ -86,26 +86,12 @@ function create_bundle(rawText) {
         transitionToSummary();
     });
 
-    //d3.json("interactionTimeline.json", function(classes) {
-    //    console.log(classes);
-    //  var nodes = cluster.nodes(genRoot(classes)),
-    //      links = genLinks(classes),
-    //      splines = bundle(links[0]);
-    //  console.log("Links:");
-    //  console.log(links[0]);
-
     //var classes = d3.csv.parseRows(rawText)
     //  .map(function(d){return {rawArr:d}; });
     var json = JSON.parse(rawText);
     graph = parse(json);
 
-    //originalKeys = graph.nodes.map(function(n){
-    //    return n.name;
-    //});
 
-    //var clusterDefinition = parseCluster(clustering);
-    //if(json.defaults && json.defaults.color) stdEdgeColor = json.defaults.color;
-    //if(json.defaults && json.defaults.width) stdEdgeWidth = json.defaults.width;
     nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
     links = graph.trees[selectedTree].frames;
     splines = bundle(links[0]);
@@ -681,12 +667,12 @@ function updateNodes(name, value) {
 
 function getTreeNames(){
   var ret = [];
-  console.log(graph);
   for ( t in graph.trees ){
     ret.push(graph.trees[t].treeLabel);
   }
   return ret;
 }
+
 
 function setTree(treeIdx){
   selectedTree = treeIdx;
@@ -713,6 +699,18 @@ function setTree(treeIdx){
 
 }
 
+
+function getTrackNames(){
+  var ret = [];
+  for ( t in graph.tracks ){
+    ret.push(graph.tracks[t].trackLabel);
+  }
+  return ret;
+}
+
+function setTrack(trackIdx){
+
+}
 
 function cross(a, b) {
     return a[0] * b[1] - a[1] * b[0];

@@ -25,17 +25,17 @@
   ],
   "tracks": [
     {
-      "trackLabel": "341+344",
+      "trackLabel": "Blue cluster",
       "trackColors": [
-        { "name": "LYS344", "color": "#2222AA" },
-        { "name": "GLU341", "color": "#111166" }
+        { "name": "LYS344", "color": "#3333AA" },
+        { "name": "GLU341", "color": "#3333AA" }
       ]
     },
     {
-      "trackLabel": "341+344",
+      "trackLabel": "White cluster",
       "trackColors": [
-        { "name": "LYS344", "color": "#2222AA" },
-        { "name": "GLU341", "color": "#111166" }
+        { "name": "LYS344", "color": "#FFFFFF" },
+        { "name": "GLU341", "color": "#FFFFFF" }
       ]
     }
   ],
