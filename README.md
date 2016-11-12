@@ -126,22 +126,24 @@ The following outlines an API for developers wishing to incorporate a flareplot 
 <script src="flareplot.js" />
 </head>
 <body>
-    <div id="evobundlediv"></div>
+    <div id="flare-container"></div>
     <script> 
-      load_dataset("...");
+      d3.json("plotfile.json", function(data) {
+        var plot = createFlareplot("flare-container", data);
+      });
     </script>
 </body>
 </html>
 ```
-Where `...` contains a json file with the format specified above.
+Where `plotfile.json` contains a json file with the format specified above.
 
 The following functions are available after a dataset has been loaded:
-  * `getTrees()` - Returns list of tree-names
-  * `setTree(t)` - Updates the ordering of nodes to reflect the tree with index `t`
-  * `getTracks()` - Returns list of track-names
-  * `setTrack(t)` - Updates the node colors/annotation to reflect the track with index `t`
-  * `addTickListener(l)` - Add a callback function, `l`, that gets invoked whenever the time-frame changes. This function must take 2 arguments. The first will be the current frame-number, and the second will be a list of tuples indicating 1) name of first and second node, 2) edge color, and 3) edge width.
-  * `addNodeToggleListener(l)` - 
-  * `addNodeHoverListener(l)` - 
-  * `addEdgeToggleListener(l)` - 
-  * `addEdgeHoverListener(l)` - 
+  * `plot.getTrees()` - Returns list of tree-names
+  * `plot.setTree(t)` - Updates the ordering of nodes to reflect the tree with index `t`
+  * `plot.getTracks()` - Returns list of track-names
+  * `plot.setTrack(t)` - Updates the node colors/annotation to reflect the track with index `t`
+  * `plot.addTickListener(l)` - Add a callback function, `l`, that gets invoked whenever the time-frame changes. This function must take 2 arguments. The first will be the current frame-number, and the second will be a list of tuples indicating 1) name of first and second node, 2) edge color, and 3) edge width.
+  * `plot.addNodeToggleListener(l)` - 
+  * `plot.addNodeHoverListener(l)` - 
+  * `plot.addEdgeToggleListener(l)` - 
+  * `plot.addEdgeHoverListener(l)` - 
