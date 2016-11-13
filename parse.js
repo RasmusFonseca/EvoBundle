@@ -10,6 +10,12 @@
  * trees - TODO
  */
 function parse(graph){
+    if(!graph.defaults)
+        graph.defaults={};
+
+    if(!graph.trees)
+        graph.trees=[{"treeName":"default", "treePaths":[]}];
+
     // =========== Construct `nodeNames` list =========== \\
     graph.nodeNames = [];
 
@@ -23,12 +29,12 @@ function parse(graph){
 
     //Fill nodeNames from trees
     graph.trees.forEach(function(t){
-            t.treePaths.forEach(function(p){
-                var name = p.substring(p.lastIndexOf(".")+1);
-                if ( !(graph.nodeNames.indexOf(name)>-1) )
-                    graph.nodeNames.push(name);
-                });
-            });
+    t.treePaths.forEach(function(p){
+        var name = p.substring(p.lastIndexOf(".")+1);
+        if ( !(graph.nodeNames.indexOf(name)>-1) )
+            graph.nodeNames.push(name);
+        });
+    });
 
     //Fill nodeNames from tracks
     graph.tracks.forEach(function(t){
@@ -72,7 +78,7 @@ function parse(graph){
                addToMap(t.tree, p);
            }
        });
-   });
+    });
 
 
 

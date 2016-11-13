@@ -74,17 +74,17 @@
   ],
   "tracks": [
     {
-      "trackLabel": "341+344",
-      "trackColors": [
-        { "name": "LYS344", "color": "#2222AA" },
-        { "name": "GLU341", "color": "#111166" }
+      "trackLabel": "Blue cluster",
+      "trackProperties": [
+        { "nodeName": "LYS344", "color": "#3333AA", "size":"1.0" },
+        { "nodeName": "GLU341", "color": "#3333AA", "size":"1.0" }
       ]
     },
     {
-      "trackLabel": "341+344",
-      "trackColors": [
-        { "name": "LYS344", "color": "#2222AA" },
-        { "name": "GLU341", "color": "#111166" }
+      "trackLabel": "Red cluster",
+      "trackProperties": [
+        { "nodeName": "LYS344", "color": "#FF3333", "size":"1.0"  },
+        { "nodeName": "GLU341", "color": "#FF3333", "size":"0.5"  }
       ]
     }
   ],
