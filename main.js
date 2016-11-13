@@ -142,7 +142,7 @@ function create_bundle(rawText) {
         .data(graph.tracks[selectedTrack].trackProperties, function(d){ return d.nodeName; })
         .enter().append("svg:g")
         .attr("class", "trackElement")
-        .attr("id", function(d) { return "trackElement-" + d.key; })
+        .attr("id", function(d) { return "trackElement-" + d.nodeName; })
         .append("path")
         .attr("transform", function(d) { 
             var x = graph.trees[selectedTree].tree[d.nodeName].x;
@@ -711,27 +711,41 @@ function setTree(treeIdx){
         .endAngle(arcW);
 
     svg.selectAll("g.trackElement")
+        .select("path")
         .transition()
         .attr("transform", function(d) { 
-                var x = graph.trees[selectedTree].tree[d.nodeName].x;
+            var x = graph.trees[selectedTree].tree[d.nodeName].x;
                 return "rotate("+x+")" ; 
-                })
-    .style("fill", function(d){ return d.color; })
+            })
+        .style("fill", function(d){ return d.color; })
         .attr("d", arc);
 
 }
 
 
 function getTrackNames(){
-  var ret = [];
-  for ( t in graph.tracks ){
-    ret.push(graph.tracks[t].trackLabel);
-  }
-  return ret;
+    var ret = [];
+    for ( t in graph.tracks ){
+        ret.push(graph.tracks[t].trackLabel);
+    }
+    return ret;
 }
 
 function setTrack(trackIdx){
+    selectedTrack = trackIdx;
+    var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
+    var arc = d3.svg.arc()
+        .innerRadius(ry-80)
+        .outerRadius(ry-70)
+        .startAngle(-arcW)
+        .endAngle(arcW);
 
+    svg.selectAll("g.trackElement")
+        .data(graph.tracks[selectedTrack].trackProperties, function(d){ return d.nodeName; })
+        .select("path")
+        .transition()
+        .style("fill", function(d){ return d.color; });
+    
 }
 
 function cross(a, b) {
