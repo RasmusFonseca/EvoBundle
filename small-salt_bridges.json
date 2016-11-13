@@ -32,10 +32,10 @@
       ]
     },
     {
-      "trackLabel": "White cluster",
+      "trackLabel": "Red cluster",
       "trackProperties": [
-        { "nodeName": "LYS344", "color": "#FFFFFF", "size":"1.0"  },
-        { "nodeName": "GLU341", "color": "#FFFFFF", "size":"0.5"  }
+        { "nodeName": "LYS344", "color": "#FF3333", "size":"1.0"  },
+        { "nodeName": "GLU341", "color": "#FF3333", "size":"0.5"  }
       ]
     }
   ],

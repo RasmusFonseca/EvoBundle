@@ -151,6 +151,59 @@
         function loadExample(fileName){
             d3.text(fileName, function(rawtext){
                 load_dataset(rawtext);
+                var radiodiv = d3.select('body')
+                    .append("div")
+                    .style("position", "absolute")
+                    .style("top","0px")
+                    .style("right","0px")
+                    .style("padding","10px")
+                    .style("border","1px solid gray")
+
+                radiodiv.append("span").text("Tree:");
+
+                var treeform = radiodiv
+                    .append("form")
+                    .attr("action","");
+            
+                var treeSpans = treeform.selectAll("span.tree")
+                    .data(getTreeNames())
+                    .enter()
+                    .append("span")
+                    .attr("class","tree");
+
+                treeSpans
+                    .append("input")
+                    .attr("type","radio")
+                    .attr("name","tree")
+                    .attr("value",function(d){return d;})
+                    .on("click",function(d,i){ setTree(i); });
+
+                treeSpans.append("span").text(function(d){ return " "+d; });
+                treeSpans.append("br");
+
+
+                radiodiv.append("span").text("Track:");
+
+                var trackform = radiodiv
+                    .append("form")
+                    .attr("action","");
+            
+                var trackSpans = trackform.selectAll("span.track")
+                    .data(getTrackNames())
+                    .enter()
+                    .append("span")
+                    .attr("class","track");
+
+                trackSpans
+                    .append("input")
+                    .attr("type","radio")
+                    .attr("name","track")
+                    .attr("value",function(d){return d;})
+                    .on("click",function(d,i){ setTrack(i); });
+
+                trackSpans.append("span").text(function(d){ return " "+d; });
+                trackSpans.append("br");
+                
             });
         }
 
