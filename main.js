@@ -144,9 +144,9 @@ function create_bundle(rawText) {
         .attr("class", "trackElement")
         .attr("id", function(d) { return "trackElement-" + d.nodeName; })
         .append("path")
-        .attr("transform", function(d) { 
+        .attr("transform", function(d) {
             var x = graph.trees[selectedTree].tree[d.nodeName].x;
-            return "rotate("+x+")" ; 
+            return "rotate("+x+")" ;
         })
         .style("fill", function(d){ return d.color; })
         .attr("d", arc);
@@ -257,176 +257,6 @@ function create_bundle(rawText) {
                 node.oldY = oldCoordinate.y;
             }
         });
-
-    }
-
-    function transitionToCluster() {
-        originalCluster = !originalCluster;
-        if (!originalCluster) {
-            assignCluster(clusterDefinition, graph);
-            fireClusterListeners(true);
-        } else {
-            resetClustering();
-            fireClusterListeners(false);
-        }
-        // brute-force approach, there may be an incremental way to do it
-        var newSplines;
-        if (summaryMode) {
-            newSplines = bundle(summaryLinks);
-        } else
-        {
-            links = graph.frames;
-            newSplines = bundle(graph.frames[curFrame]);
-        }
-        nodes = cluster.nodes(graph.treeRoot);
-        // on s'en fout des controles points, le seul truc qui nous interesse c'est le depart
-        // et l'arrive .. english, man!
-        var done = false;
-        var path = svg.selectAll("path.link");
-
-
-        // TODO(chab) good way would be to have a map of all the splines and use that, so we could get rid
-        // of the usage of the index. We have no guarantee that the two splines array have the same ordering,
-        // usage of key and map would allow us to get rid of that assumption
-
-        path.transition().attrTween("d",
-            function(d, i, a) {
-
-                //if (i != 2) return;
-                // make a copy of the targeted Spline, and put all x to the value of OldX..
-                var oldSpline = [];
-                if (!splines[i]) {
-                    console.log('TOO BAD');
-                    return;
-                }
-                for (var j = 0; j < splines[i].length; j++) {
-                    var s = Object.assign({}, splines[i][j]);
-
-                    // when we get back to old cluster, splines array is not updated
-                    // as we got NEW nodes in the graph array, so the x coordinate
-                    // is really the old coordinate in that case
-                    if (s.oldX && !originalCluster) { s.x = s.oldX; }
-                    oldSpline.push(s);
-                }
-                oldSpline = oldSpline.map(function(s) {
-                    return {x: s.x, y: s.y};
-                });
-                var simpleSpline = newSplines[i].map(function(s) { return {x: s.x, y:s.y}});
-                // now if oldspine is missing controlpoints
-
-
-                var delta = simpleSpline.length - oldSpline.length;
-
-                // old spline has less target point ( 3 < 5)
-                if (oldSpline.length < simpleSpline.length) {
-
-                    if (delta !=2 ) return;
-
-                    var pathToTop = Math.floor(simpleSpline.length / 2);
-                    // for 1 => 0 then add index 1(CP) 2(center) 3 (CP) (should not happen)
-                    // for 3 => 1 then add index 1(CP) and 3(CP)
-
-                    var recomposedOldSpline = [];
-                    recomposedOldSpline[0] = oldSpline[0];
-                    if (delta == 2) {
-                        recomposedOldSpline[1] = oldSpline[0];
-                        recomposedOldSpline[2] = oldSpline[1];
-                        recomposedOldSpline[3] = oldSpline[2];
-                        recomposedOldSpline[4] = oldSpline[2];
-                    }  else {
-                        recomposedOldSpline = oldSpline;
-                    }
-
-                } else if (delta == -2) { // (5 < 3)
-                    // newer spline has less target point than older spline
-                    var recomposedNewSpline = [];
-                    recomposedNewSpline[0] = simpleSpline[0];
-                    recomposedNewSpline[1] = simpleSpline[0];
-                    recomposedNewSpline[2] = simpleSpline[1];
-                    recomposedNewSpline[3] = simpleSpline[2];
-                    recomposedNewSpline[4] = simpleSpline[2];
-                    simpleSpline = recomposedNewSpline;
-                    recomposedOldSpline = oldSpline;
-
-                } else
-                {
-                    recomposedOldSpline = oldSpline;
-                }
-                var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
-
-                // we can update the spline as we are done
-                setTimeout(function(){
-                    if (!done){
-                        done = true;
-                        splines = newSplines;
-                        // we do not want to rebind data here
-                    }
-
-                },800);
-
-                return function(t) {
-
-                    return line(interpolate(t))
-                };
-                //return d3.interpolateString(a, line(splines[i]));
-                //return line(splines[i]);
-            })
-            .duration(900);
-
-        // why if i forget the key function,
-        var selection = svg.selectAll("g.node")
-            .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key});
-        selection.enter().append("svg:g")
-            .attr("class", "node")
-            .attr("id", function(d) { return "node-" + d.key; })
-            .attr("transform", function(d) {
-                var matrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"
-                return matrix;
-            })
-            .append("svg:text")
-            .text(function(d) { return d.key; });
-        selection.select('text').attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
-            .attr("dy", ".31em")
-            .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-            .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; })
-
-        selection.transition().duration(900)
-            .attrTween("transform", function(d) {
-                var oldMatrix = "rotate(" + (d.oldX - 90) + ")translate(" + d.y + ")";
-                var newMatrix = "rotate(" + (d.x - 90) + ")translate(" + d.y + ")";
-                return d3.interpolateString(oldMatrix, newMatrix);
-            });
-        selection.exit().remove();
-
-
-
-        var handle = svg.selectAll("g.trackElement")
-            .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key});
-
-        // see https://bl.ocks.org/mbostock/5348789 for concurrent transitions,
-        // but i really find it bad... so i will no do it
-        var hpath = handle.select("path").transition().duration(900).attr("transform", function(d) {
-            var newMatrix = "rotate(" + (d.x  ) + ")";
-            return newMatrix
-        });
-        //TODO remove unused handle
-
-        hpath.transition()
-            .delay(function(d,i){return 900+i;})
-            .duration(900).style("fill", function(d){
-                if (originalCluster) {
-                    return ("color" in d)?d.color:stdEdgeColor;
-                } else {
-                    if (d.clusterKey === 'LigandPocket: ') {
-                        return 'cyan';
-                    }
-                    if (d.clusterKey === ' GproteinPocket: ') {
-                        return 'magenta';
-                    }
-                    return 'grey';
-                }
-            });
-
     }
 }
 
@@ -665,13 +495,12 @@ function getTreeNames(){
 
 function setTree(treeIdx){
 
-    debugger;
     var oldTreeIdx = selectedTree;
     selectedTree = treeIdx;
     assignCluster(graph.trees[selectedTree], graph.trees[oldTreeIdx], graph);
 
-  nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
-  links = graph.trees[selectedTree].frames;
+    nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
+    links = graph.trees[selectedTree].frames;
 
   svg.selectAll("g.node")
     .data(nodes.filter(function(n) { return !n.children; }), function(d) { return d.key})
@@ -711,7 +540,9 @@ function setTree(treeIdx){
     var newSplines = bundle(graph.trees[selectedTree].frames[curFrame]);
 
     var done = false;
-    var path = svg.selectAll("path.link")
+    var path = svg.selectAll("path.link").data(links[curFrame], function(d,i){
+            return "source-" + d.source.key + "target-" + d.target.key;
+        });
     path.transition().attrTween("d",
         function(d, i, a) {
 
@@ -851,8 +682,6 @@ function upload_button(el, callback) {
     }
 }
 
-
-
 function parseCluster(cluster) {
     var keyValuesClusterArray = cluster.split('"');
     var numberOfObjects = Math.floor(keyValuesClusterArray.length / 2);
@@ -887,125 +716,6 @@ function fireClusterListeners(clusteringEnabled){
 
 
 
-var summaryListeners = [];
-function fireSummaryListeners(){
-    for(var i=0;i<summaryListeners.length;i++){
-        summaryListeners[i](summaryLinks);
-    }
-}
-
-var summaryLinks;
-
-var D;
-function transitionToSummary(){
-    //links contains all the frames
-    if (summaryMode) {
-        // take from setFrame, but with transition
-        splines = bundle(links[curFrame]);
-        path = svg.selectAll("path.link")
-            .data(links[curFrame], function(d,i){ return "source-" + d.source.key + "target-" + d.target.key;});//, function(d){ return {source:d.source, target:d.target}; });
-
-        //.attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-        path.attr("class", function(d) {
-            var ret = "link source-" + d.source.key + " target-" + d.target.key;
-            if( d.source.key in toggledNodes || d.target.key in toggledNodes)
-                ret+=" toggled";
-            return ret;
-        });
-        path.transition().duration(2000).style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; });
-
-        path.exit().transition().duration(2000)
-            .style("stroke-width",function(d){ return 0; }).remove();
-        summaryMode = !summaryMode;
-        removeLegend()
-
-        return;
-    }
-
-
-    if(playing) { playpause(); }
-
-    summaryMode = !summaryMode;
-    console.log(links[0]);
-
-    //Initialize empty two-dim array
-    var n = nodes.length;
-    var countMatrix = new Array(n);
-    for(var i=0;i<n;i++) {
-        countMatrix[i] = new Array(n);
-        for(var j=0;j<n;j++)
-            countMatrix[i][j] = 0;
-
-        //Add index to nodes for faster lookup
-        nodes[i].idx = i;
-    }
-
-    var maxVal = 0;
-
-    //Go through all frames and add counts to distMatrix
-    for(var f=0;f<links.length;f++){
-        for(var i=0;i<links[f].length;i++){
-            idx1 = links[f][i].source.idx;
-            idx2 = links[f][i].target.idx;
-            countMatrix[idx1][idx2]++;
-            countMatrix[idx2][idx1]++;
-            if (countMatrix[idx2][idx1]>maxVal)
-                maxVal = countMatrix[idx2][idx1];
-        }
-    }
-
-    summaryLinks = [];
-    for(var i=0;i<n;i++) {
-        for(var j=0;j<n;j++){
-            if(countMatrix[i][j]==0) continue;
-            var ndi, ndj;
-            for(var nd=0;nd<n;nd++) {
-                if (nodes[nd].idx == i) ndi = nodes[nd];
-                if (nodes[nd].idx == j) ndj = nodes[nd];
-            }
-            summaryLinks.push( {"source":ndi, "target":ndj, "weight":countMatrix[i][j]} );
-        }
-    }
-
-    var summaryLinksExtent = d3.extent(summaryLinks, function(d) {
-        return d.weight;
-    });
-
-    var legendMaxHeight = 30;
-
-    var linkWidthScale = d3.scale.linear()
-        .domain(summaryLinksExtent)
-        .range([0, legendMaxHeight]);
-
-    D = countMatrix;
-    var splines = bundle(summaryLinks);
-
-    path = svg.selectAll("path.link")
-        .data(summaryLinks, function(d,i){
-            var key = "source-" + d.source.key + "target-" + d.target.key;
-            console.log(key);
-            return key;
-        });
-
-
-    // some nodes are removed because they are not
-
-    path.enter().insert("svg:path")
-        .style("stroke-width",function(d){ return 0; });
-
-    path.attr("class", function(d) {
-        var ret = "link source-" + d.source.key + " target-" + d.target.key;
-        if( d.source.key in toggledNodes || d.target.key in toggledNodes)
-            ret+=" toggled";
-        return ret;
-    })
-        .attr("d", function(d, i) { return line(splines[i]); })
-        .transition().duration(2000)
-        .style("stroke-width",function(d){ return linkWidthScale(d.weight) })
-        .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; });
-
-    path.exit().remove();
-}
 
 
 
