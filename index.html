@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en-us">
 <head>
@@ -142,10 +143,11 @@
     <script src="main.js"></script>
     <script>
         // load dataset and create table
+        var chart;
         function load_dataset(json) {
             d3.select("section.main-content").style("display", "block");
             d3.select("section.main-upload").style("display", "none");
-            create_bundle(json);
+            chart = getChart(json);
         }
 
         function loadExample(fileName){
@@ -166,7 +168,7 @@
                     .attr("action","");
             
                 var treeSpans = treeform.selectAll("span.tree")
-                    .data(getTreeNames())
+                    .data(chart.getTreeNames())
                     .enter()
                     .append("span")
                     .attr("class","tree");
@@ -176,7 +178,7 @@
                     .attr("type","radio")
                     .attr("name","tree")
                     .attr("value",function(d){return d;})
-                    .on("click",function(d,i){ setTree(i); });
+                    .on("click",function(d,i){ chart.setTree(i); });
 
                 treeSpans.append("span").text(function(d){ return " "+d; });
                 treeSpans.append("br");
@@ -189,7 +191,7 @@
                     .attr("action","");
             
                 var trackSpans = trackform.selectAll("span.track")
-                    .data(getTrackNames())
+                    .data(chart.getTrackNames())
                     .enter()
                     .append("span")
                     .attr("class","track");
@@ -199,7 +201,7 @@
                     .attr("type","radio")
                     .attr("name","track")
                     .attr("value",function(d){return d;})
-                    .on("click",function(d,i){ setTrack(i); });
+                    .on("click",function(d,i){ chart.setTrack(i); });
 
                 trackSpans.append("span").text(function(d){ return " "+d; });
                 trackSpans.append("br");
@@ -207,7 +209,7 @@
             });
         }
 
-        upload_button("uploader", load_dataset);
+        //upload_button("uploader", load_dataset);
 
     </script>
 </section>

@@ -21,6 +21,18 @@
        "LYS344",
        "GLU341"
       ]
+    },
+    {
+      "treeLabel": "Disparate",
+      "treePaths": [
+        "ONEFOUR.LEVEL.1.LYS344",
+        "ONEFOUR.LEVEL.1.GLU341",
+        "ONEFOUR.LEVEL.GLU229",
+        "ONEFOUR.LEVEL.GLU341",
+        "ONEFOUR.LEVEL.LYS233",
+        "TRUC.ASP164",
+        "TRUC.ARG179"
+      ]
     }
   ],
   "tracks": [
@@ -32,10 +44,10 @@
       ]
     },
     {
-      "trackLabel": "Red cluster",
+      "trackLabel": "White cluster",
       "trackProperties": [
-        { "nodeName": "LYS344", "color": "#FF3333", "size":"1.0"  },
-        { "nodeName": "GLU341", "color": "#FF3333", "size":"0.5"  }
+        { "nodeName": "LYS344", "color": "#FFFFFF", "size":"1.0"  },
+        { "nodeName": "GLU341", "color": "#FFFFFF", "size":"0.5"  }
       ]
     }
   ],
