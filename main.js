@@ -10,29 +10,30 @@ var w = 800,
     m0,
     rotate = 0;
 
-var cluster = d3.layout.cluster()
-  .size([360, ry - 120])
-  .sort(function(a, b) {
-    var aRes = a.key.match(/[0-9]*$/);
-    var bRes = b.key.match(/[0-9]*$/);
-    if(aRes.length==0 || bRes.length==0){
-      aRes = a.key;
-      bRes = b.key;
-    }else{
-      aRes = parseInt(aRes[0]);
-      bRes = parseInt(bRes[0]);
-    }
-    if (!originalCluster) {
-      // we need to take the key into account
-      var aCluster = a.key.match(/^[0-9]*/);
-      var bCluster = b.key.match(/^[0-9]*/);
-      aCluster = parseInt(aCluster[0]);
-      bCluster = parseInt(bCluster[0]);
-      return d3.ascending(aCluster * 1000 + aRes, bCluster * 1000 + bRes);
-    }
 
-    return d3.ascending(aRes, bRes); 
-  });
+var cluster = d3.layout.cluster()
+    .size([360, ry - 120])
+    .sort(function(a, b) {
+            var aRes = a.key.match(/[0-9]*$/);
+            var bRes = b.key.match(/[0-9]*$/);
+            if(aRes.length==0 || bRes.length==0){
+                aRes = a.key;
+                bRes = b.key;
+            }else{
+                aRes = parseInt(aRes[0]);
+                bRes = parseInt(bRes[0]);
+            }
+            if (!originalCluster) {
+            // we need to take the key into account
+            var aCluster = a.key.match(/^[0-9]*/);
+            var bCluster = b.key.match(/^[0-9]*/);
+            aCluster = parseInt(aCluster[0]);
+            bCluster = parseInt(bCluster[0]);
+            return d3.ascending(aCluster * 1000 + aRes, bCluster * 1000 + bRes);
+        }
+
+        return d3.ascending(aRes, bRes); 
+    });
 
 //var stdEdgeColor = "#1f77b4";
 var stdEdgeColor = "rgba(0,0,0,200)";
@@ -129,21 +130,25 @@ function create_bundle(rawText) {
         .on("mouseout", mouseoutNode)
         .on("click", toggleNode);
 
-    var arcWidth = 300.0/graph.nodeNames.length;
+    var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
     var arc = d3.svg.arc()
         .innerRadius(ry-80)
         .outerRadius(ry-70)
-        .startAngle(-arcWidth*Math.PI/360)
-        .endAngle(arcWidth*Math.PI/360);
+        .startAngle(-arcW)
+        .endAngle(arcW);
 
-    svg.selectAll("g.nodeBar")
-        .data(nodes.filter(function(n) { return !n.children; }))
+    svg.selectAll("g.trackElement")
+        //.data(nodes.filter(function(n) { return !n.children; }))
+        .data(graph.tracks[selectedTrack].trackProperties, function(d){ return d.nodeName; })
         .enter().append("svg:g")
-        .attr("class", "nodeBar")
-        .attr("id", function(d) { return "nodeBar-" + d.key; })
+        .attr("class", "trackElement")
+        .attr("id", function(d) { return "trackElement-" + d.key; })
         .append("path")
-        .attr("transform", function(d) { return "rotate(" + (d.x )+ ")" ; })
-        .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
+        .attr("transform", function(d) { 
+            var x = graph.trees[selectedTree].tree[d.nodeName].x;
+            return "rotate("+x+")" ; 
+        })
+        .style("fill", function(d){ return d.color; })
         .attr("d", arc);
 
     d3.select("input[type=range]")
@@ -395,7 +400,7 @@ function create_bundle(rawText) {
 
 
 
-        var handle = svg.selectAll("g.nodeBar")
+        var handle = svg.selectAll("g.trackElement")
             .data(nodes.filter(function(n) { return !n.children; }), function(d){ return d.key});
 
         // see https://bl.ocks.org/mbostock/5348789 for concurrent transitions,
@@ -675,27 +680,44 @@ function getTreeNames(){
 
 
 function setTree(treeIdx){
-  selectedTree = treeIdx;
+    selectedTree = treeIdx;
 
-  nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
-  links = graph.trees[selectedTree].frames;
-  splines = bundle(links[curFrame]);
-  
-  var path = svg.selectAll("path.link")
-    .data(links[curFrame], function(d,i){
-      return "source-" + d.source.key + "target-" + d.target.key;
-    })
-    .transition()
-    .attr("d", function(d, i) { return line(splines[i]); });
+    nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
+    links = graph.trees[selectedTree].frames;
+    splines = bundle(links[curFrame]);
 
-  svg.selectAll("g.node")
-    .data(nodes.filter(function(n) { return !n.children; }))
+    var path = svg.selectAll("path.link")
+        .data(links[curFrame], function(d,i){
+                return "source-" + d.source.key + "target-" + d.target.key;
+                })
     .transition()
-    .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-    .select("text")
-    .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
-    .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
-    .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; });
+        .attr("d", function(d, i) { return line(splines[i]); });
+
+    svg.selectAll("g.node")
+        .data(nodes.filter(function(n) { return !n.children; }))
+        .transition()
+        .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
+        .select("text")
+        .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
+        .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
+        .attr("transform", function(d) { return d.x < 180 ? null : "rotate(180)"; });
+
+
+    var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
+    var arc = d3.svg.arc()
+        .innerRadius(ry-80)
+        .outerRadius(ry-70)
+        .startAngle(-arcW)
+        .endAngle(arcW);
+
+    svg.selectAll("g.trackElement")
+        .transition()
+        .attr("transform", function(d) { 
+                var x = graph.trees[selectedTree].tree[d.nodeName].x;
+                return "rotate("+x+")" ; 
+                })
+    .style("fill", function(d){ return d.color; })
+        .attr("d", arc);
 
 }
 
