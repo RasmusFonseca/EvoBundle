@@ -27,28 +27,19 @@ function getChart(width, json, divId){
                 aRes = parseInt(aRes[0]);
                 bRes = parseInt(bRes[0]);
             }
-            if (!originalCluster) {
-                // we need to take the key into account
-                var aCluster = a.key.match(/^[0-9]*/);
-                var bCluster = b.key.match(/^[0-9]*/);
-                aCluster = parseInt(aCluster[0]);
-                bCluster = parseInt(bCluster[0]);
-                return d3.ascending(aCluster * 1000 + aRes, bCluster * 1000 + bRes);
-            }
-
             return d3.ascending(aRes, bRes);
         });
 
     var stdEdgeColor = "rgba(0,0,0,200)";
     var stdEdgeWidth = 2;
-    var svg, div, buttons, bundle, line, nodes, splines, links, graph;
+    var svg, div, bundle, line, nodes, splines, links, graph;
     var summaryMode = false;
 
-    var originalCluster = true;
     var selectedTree = 0;
     var selectedTrack = 0;
     var toggledNodes = {};
     var originalText;
+    var splineDico;
 
     var clusterListeners = [];
 
@@ -97,11 +88,12 @@ function getChart(width, json, divId){
             nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
             links = graph.trees[selectedTree].frames;
             splines = bundle(links[0]);
+            splineDico = buildSplineIndex(splines);
 
             var path = svg.selectAll("path.link")
                 .data(links[0], function(d,i){
                     var key = "source-" + d.source.key + "target-" + d.target.key;
-                    console.log(key);
+                    console.log('LINK key', key);
                     return key;
                 })
                 .enter().append("svg:path")
@@ -471,7 +463,7 @@ function getChart(width, json, divId){
             var oldTreeIdx = selectedTree;
             selectedTree = treeIdx;
             assignCluster(graph.trees[selectedTree], graph.trees[oldTreeIdx], graph);
-
+            var recomposedSplines = [];
             nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
             links = graph.trees[selectedTree].frames;
 
@@ -511,67 +503,75 @@ function getChart(width, json, divId){
 
             // transition the splines
             var newSplines = bundle(graph.trees[selectedTree].frames[curFrame]);
+            var newSplinesDico = buildSplineIndex(newSplines);
+
 
             var done = false;
             var path = svg.selectAll("path.link").data(links[curFrame], function(d,i){
                 return "source-" + d.source.key + "target-" + d.target.key;
             });
+
+            // i dont understand how d3 orders the spline array, so we need
             path.transition().attrTween("d",
                 function(d, i, a) {
 
                     //if (i != 2) return;
                     // make a copy of the targeted Spline, and put all x to the value of OldX..
                     var oldSpline = [];
-                    if (!splines[i]) {
-                        console.log('TOO BAD');
+                    var key = d.key;
+
+                    var oldSplineIdx =  splineDico[key];
+                    var newSplineIdx = newSplinesDico[key];
+                    if (oldSplineIdx === void 0 || newSplineIdx === void 0) {
+                        console.log('Not found Spline with key', key);
                         return;
                     }
-                    for (var j = 0; j < splines[i].length; j++) {
-                        var s = Object.assign({}, splines[i][j]);
 
-                        // when we get back to old cluster, splines array is not updated
-                        // as we got NEW nodes in the graph array, so the x coordinate
-                        // is really the old coordinate in that case
-                        if (s.oldX && !originalCluster) { s.x = s.oldX; }
+                    for (var j = 0; j < splines[oldSplineIdx].length; j++) {
+                        var s = Object.assign({}, splines[oldSplineIdx][j]);
                         oldSpline.push(s);
                     }
                     oldSpline = oldSpline.map(function(s) {
                         return {x: s.x, y: s.y};
                     });
-                    var simpleSpline = newSplines[i].map(function(s) { return {x: s.x, y:s.y}});
+
+                    var simpleSpline = newSplines[newSplineIdx].map(function(s) {
+                        console.log('ASSIGNING', s.key);
+                        return {x: s.x, y:s.y, key:s.key}
+                    });
                     // now if oldspine is missing controlpoints
 
-
                     var delta = simpleSpline.length - oldSpline.length;
+                    console.log(delta, simpleSpline.length, oldSpline.length);
 
                     // old spline has less target point ( 3 < 5)
                     if (oldSpline.length < simpleSpline.length) {
-
-                        if (delta !=2 ) return;
-
-                        var pathToTop = Math.floor(simpleSpline.length / 2);
-                        // for 1 => 0 then add index 1(CP) 2(center) 3 (CP) (should not happen)
-                        // for 3 => 1 then add index 1(CP) and 3(CP)
-
+                        //positive delta
                         var recomposedOldSpline = [];
-                        recomposedOldSpline[0] = oldSpline[0];
-                        if (delta == 2) {
-                            recomposedOldSpline[1] = oldSpline[0];
-                            recomposedOldSpline[2] = oldSpline[1];
-                            recomposedOldSpline[3] = oldSpline[2];
-                            recomposedOldSpline[4] = oldSpline[2];
-                        }  else {
-                            recomposedOldSpline = oldSpline;
+                        // we make the assumption that we start with 3 control points
+                        // but they may be more complicated situations
+                        // if delta =  2   0 - 0, 1-0, 2-1, 3-2, 4-2  (3 to 5 )
+                        // if delta =  4   0-0 1-0 2-0, 3-1, 4-2, 5-2, 6-2  ( 3 to 7 )
+                        // if delta = 2 ( 5 to 7) what happens ?
+                        // if delta = 4 ( 5 to 9) what happens ?
+                        for (i = 0, currentIndex = 0; i < simpleSpline.length; i++) {
+                            recomposedOldSpline[i] = oldSpline[currentIndex];
+                            if (i <= delta/2 || currentIndex >= oldSpline.length - 1) { } else {
+                                currentIndex++;
+                            }
                         }
-
-                    } else if (delta == -2) { // (5 < 3)
+                    } else if (delta == -2 || delta == -4) { // (5 < 3)
                         // newer spline has less target point than older spline
                         var recomposedNewSpline = [];
-                        recomposedNewSpline[0] = simpleSpline[0];
-                        recomposedNewSpline[1] = simpleSpline[0];
-                        recomposedNewSpline[2] = simpleSpline[1];
-                        recomposedNewSpline[3] = simpleSpline[2];
-                        recomposedNewSpline[4] = simpleSpline[2];
+                        // -2, 5 to 3   => 0 -0, 1-0, 2-1, 3-2,4-2  (simplespline 3, oldSpine = 5)
+                        // -4 ,7 to 3   => 0-0, 1-0, 2-0, 3-1, 4-2 5-2 6-2
+                        delta = Math.abs(delta);
+                        for (i = 0, currentIndex = 0; i < oldSpline.length; i++) {
+                            recomposedNewSpline[i] = simpleSpline[currentIndex];
+                            if (i <= delta / 2 || currentIndex >= oldSpline.length - 1) {} else {
+                                currentIndex++;
+                            }
+                        }
                         simpleSpline = recomposedNewSpline;
                         recomposedOldSpline = oldSpline;
 
@@ -579,24 +579,23 @@ function getChart(width, json, divId){
                     {
                         recomposedOldSpline = oldSpline;
                     }
+                    recomposedSplines.push(simpleSpline);
                     var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
 
-                    // we can update the spline as we are done
+                    // we can update the splines at the next loop, or it will mess D3
                     setTimeout(function(){
                         if (!done){
                             done = true;
-                            splines = newSplines;
+                            splines = recomposedSplines;
+                            splineDico = buildSplineIndex(recomposedSplines);
                             // we do not want to rebind data here
                         }
 
-                    },800);
+                    }, 0);
 
                     return function(t) {
-
                         return line(interpolate(t))
                     };
-                    //return d3.interpolateString(a, line(splines[i]));
-                    //return line(splines[i]);
                 })
                 .duration(500);
 
@@ -684,6 +683,20 @@ function getChart(width, json, divId){
                 clusterListeners[i](clusteringEnabled);
             }
         }
+
+        // For all splines in the array, create an index that match the key of
+        // the link and the index in the spline array
+        function buildSplineIndex(splines) {
+            var linkKeyToSplineIdx = {};
+            splines.forEach(function(spline, idx){
+                var source = spline[0].key;
+                var target = spline[spline.length-1].key;
+                var key = source + '-' + target;
+                linkKeyToSplineIdx[key] = idx;
+            });
+            return linkKeyToSplineIdx;
+        }
+
         create_bundle(json);
 
         return {

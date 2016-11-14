@@ -90,7 +90,7 @@ function parse(graph){
             var edge = {
                 source : t.tree[e.name1],
                 target : t.tree[e.name2],      
-                key    : ""+i,
+                key    : ""+t.tree[e.name1].key+'-'+t.tree[e.name2].key,
                 color  : e.color || graph.defaults.edgeColor || "rgba(100,100,100,100)",
                 width  : e.width || graph.defaults.edgeWidth || 1
             };

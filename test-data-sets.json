@@ -1,0 +1,75 @@
+{
+  "edges": [
+    {"name1":"ARG179", "name2":"ASP164", "color":"#AA2222", "width":10, "frames":[0,1,2,3,4] },
+    {"name1":"ARG179", "name2":"ASP164",                    "width":5,  "frames":[5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20] },
+    {"name1":"ARG277", "name2":"GLU341",                                "frames":[17] },
+    {"name1":"LYS233", "name2":"GLU229",                                "frames":[4,5,6,7,9,10,11,12,14,16,17] },
+    {"name1":"LYS233", "name2":"GLU229",                                "frames":[0,1,2,3,9,19,20] },
+    {"name1":"LYS344", "name2":"GLU341",                                "frames":[0,1,2,3,4,5,6,8,9,10,11,12,13,14,15,16] },
+    {"name1":"LYS345", "name2":"GLU342",                                "frames":[0,1,2,3,4,5,6,8,9,10,11,12,13,14,15,16] },
+    {"name1":"LYS346", "name2":"GLU343",                                "frames":[0,1,2,3,4,5,6,8,9,10,11,12,13,14,15,16] }
+  ],
+  "trees": [
+    {
+      "treeLabel": "341+344",
+      "treePaths": [
+        "ONEFOUR.LYS344",
+        "ONEFOUR.GLU341"
+      ]
+    },
+    {
+      "treeLabel": "Disparate",
+      "treePaths": [
+       "LYS344",
+       "GLU341"
+      ]
+    },
+    {
+      "treeLabel": "Disparate2",
+      "treePaths": [
+        "ONEFOUR.LEVEL.1.LYS344",
+        "ONEFOUR.LEVEL.1.GLU341",
+        "ONEFOUR.LEVEL.GLU229",
+        "ONEFOUR.LEVEL.GLU341",
+        "ONEFOUR.LEVEL.LYS233",
+        "TRUC.ASP164",
+        "TRUC.ARG179"
+      ]
+    },
+    {
+      "treeLabel": "Multivel",
+      "treePaths": [
+        "B.5.LYS346",
+        "A.1.ARG179",
+        "A.1.ASP164",
+        "A.1.LYS233",
+        "B.1.ASP277",
+        "B.1.GLU341",
+        "B.4.GLU342",
+        "B.4.GLU343",
+        "B.5.GLU229",
+        "B.5.LYS345"
+      ]
+    }
+  ],
+  "tracks": [
+    {
+      "trackLabel": "Blue cluster",
+      "trackProperties": [
+        { "nodeName": "LYS344", "color": "#3333AA", "size":"1.0" },
+        { "nodeName": "GLU341", "color": "#3333AA", "size":"1.0" }
+      ]
+    },
+    {
+      "trackLabel": "White cluster",
+      "trackProperties": [
+        { "nodeName": "LYS344", "color": "#FFFFFF", "size":"1.0"  },
+        { "nodeName": "GLU341", "color": "#FFFFFF", "size":"0.5"  }
+      ]
+    }
+  ],
+  "defaults":{
+    "edgeColor":"rgba(100,100,100,100)",
+    "edgeWidth":4
+  }
+}
