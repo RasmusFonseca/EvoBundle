@@ -1,15 +1,19 @@
 
 
 
-function getChart(json){
-    var w = 800,
-        h   = 800,
+function getChart(width, json, divId){
+    var w = width,
+        h   = w,
         rx  = w / 2,
-        ry  = h / 2,
+        ry  = w / 2,
         m0,
         rotate = 0;
 
-
+    if (!divId) {
+        divId = '#evobundlediv';
+    } else {
+        divId = '#' + divId;
+    }
 
     var cluster = d3.layout.cluster()
         .size([360, ry - 120])
@@ -61,10 +65,11 @@ function getChart(json){
                 .radius(function(d) { return d.y; })
                 .angle(function(d) { return d.x / 180 * Math.PI; });
 
-            d3.select("#evobundlediv").style("position","relative");
+
+            d3.select(divId).style("position","relative");
 
             // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
-            div = d3.select("#evobundlediv").insert("div")
+            div = d3.select(divId).insert("div")
                 .style("width", w + "px")
                 .style("height", w + "px")
                 .style("-webkit-backface-visibility", "hidden");

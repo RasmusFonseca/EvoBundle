@@ -143,11 +143,12 @@
     <script src="main.js"></script>
     <script>
         // load dataset and create table
-        var chart;
+        var chart, secondChart;
         function load_dataset(json) {
             d3.select("section.main-content").style("display", "block");
             d3.select("section.main-upload").style("display", "none");
-            chart = getChart(json);
+            chart = getChart(800, json);
+            secondChart = getChart(600, json, 'secondDiv');
         }
 
         function loadExample(fileName){
@@ -223,6 +224,10 @@
             <input id="timeRange" type="range" min="0" max="1000" value="0" />
             <span id="timeLabel">0</span>
         </div>
+    </div>
+
+    <div id="secondDiv">
+
     </div>
 
 
