@@ -93,7 +93,6 @@ function getChart(width, json, divId){
             var path = svg.selectAll("path.link")
                 .data(links[0], function(d,i){
                     var key = "source-" + d.source.key + "target-" + d.target.key;
-                    console.log('LINK key', key);
                     return key;
                 })
                 .enter().append("svg:path")
@@ -255,13 +254,11 @@ function getChart(width, json, divId){
                 } else
                 {
                     // it could happen that an new node come (in case of intermediate level)
-                    console.log(nodeKey);
                     newNode = nodesMap[nodeKey];
                     newNode.clusterName = nodeKey;
 
                 }
                 if (newNode.children && newNode.children.length > 0) {
-                    console.log('SHOULD GO DEEP', newNode.children);
                     newNode.children.forEach(copyAndGoThruChildren);
                 }
             }
@@ -536,15 +533,10 @@ function getChart(width, json, divId){
                     });
 
                     var simpleSpline = newSplines[newSplineIdx].map(function(s) {
-                        console.log('ASSIGNING', s.key);
                         return {x: s.x, y:s.y, key:s.key}
                     });
                     // now if oldspine is missing controlpoints
-
                     var delta = simpleSpline.length - oldSpline.length;
-                    console.log(delta, simpleSpline.length, oldSpline.length);
-
-                    // old spline has less target point ( 3 < 5)
                     if (oldSpline.length < simpleSpline.length) {
                         //positive delta
                         var recomposedOldSpline = [];
@@ -581,7 +573,6 @@ function getChart(width, json, divId){
                     }
                     recomposedSplines.push(simpleSpline);
                     var interpolate = d3.interpolate(recomposedOldSpline, simpleSpline);
-
                     // we can update the splines at the next loop, or it will mess D3
                     setTimeout(function(){
                         if (!done){
