@@ -1,7 +1,7 @@
 
 
 
-function getChart(width, json, divId){
+function createFlareplot(width, json, divId){
     var w = width,
         h   = w,
         rx  = w / 2,
@@ -38,15 +38,13 @@ function getChart(width, json, divId){
     var selectedTree = 0;
     var selectedTrack = 0;
     var toggledNodes = {};
-    var originalText;
     var splineDico;
 
     var clusterListeners = [];
 
     return (function() {
 
-        function create_bundle(rawText) {
-            originalText = rawText;
+        function create_bundle(json) {
 
             bundle = d3.layout.bundle();
 
@@ -83,7 +81,7 @@ function getChart(width, json, divId){
             d3.select(".summaryButton").on("click", function() {
                 transitionToSummary();
             });
-            var json = JSON.parse(rawText);
+            //var json = JSON.parse(rawText);
             graph = parse(json);
             nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
             links = graph.trees[selectedTree].frames;
@@ -166,8 +164,25 @@ function getChart(width, json, divId){
                 cp = 2,
                 cw = 3*ch+2*cp;
 
-            var controls = d3.select("div#evocontrols")
-                .select("#controls")
+
+        //<div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
+        //    <span  id="controls"></span>
+        //    <input id="timeRange" type="range" min="0" max="1000" value="0" />
+        //    <span id="timeLabel">0</span>
+        //</div>
+            var controlDiv = d3.select(divId)
+                .append("div")
+                .attr("id","evocontrols")
+                .style("position","absolute")
+                .style("bottom","3px")
+                .style("left","0px")
+                .style("width","100%")
+                //.style("height","20px")
+                .style("font-size","18px");
+
+            var controls = controlDiv
+                .append("span")
+                .attr("id","controls")
                 .style("width",cw)
                 .style("height",ch)
                 .append("svg:svg")
@@ -210,11 +225,24 @@ function getChart(width, json, divId){
                 .attr('pointer-events', 'none')
                 .html(function(d){ return d.symbol; });
 
-            d3.select("div#evocontrols #timeRange")
+        //    <input id="timeRange" type="range" min="0" max="1000" value="0" />
+            //d3.select("div#evocontrols #timeRange")
+            controlDiv
+                .append("input")
+                .attr("id","timeRange")
+                .attr("type","range")
+                .attr("min","0")
+                .attr("max","1000")
+                .attr("value","0")
                 .style("width",(w-2*cw-20)+"px")
                 .style("height", ch+"px");
 
-            d3.select("div#evocontrols #timeLabel")
+        //    <span id="timeLabel">0</span>
+            //d3.select("div#evocontrols #timeLabel")
+            controlDiv
+                .append("span")
+                .attr("id","timeLabel")
+                .text("0")
                 .style("position","relative")
                 .style("left", "20px")
                 .style("alignment-baseline","middle")
