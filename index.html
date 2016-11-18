@@ -90,18 +90,10 @@
     </style>
 
     <script src="http://d3js.org/d3.v3.min.js"></script>
-    <script type="text/javascript" src="parse.js"></script>
+    <script type="text/javascript" src="flareplot-parser.js"></script>
+    <script src="flareplot-main.js"></script>
 </head>
 <body>
-<!--
-    <section class="page-header">
-      <h1 class="project-name">Evobundle</h1>
-      <h2 class="project-tagline">Bundle visualization that evolves</h2>
-      <a href="https://github.com/RasmusFonseca/EvoBundle" class="btn">View on GitHub</a>
-      <a href="https://github.com/RasmusFonseca/EvoBundle/zipball/master" class="btn">Download .zip</a>
-      <a href="https://github.com/RasmusFonseca/EvoBundle/tarball/master" class="btn">Download .tar.gz</a>
-    </section>
--->
 
 <section class="main-upload">
     <h1>Time-evolving bundle plots</h1>
@@ -142,7 +134,6 @@
     </p>
     <input type="file" id="uploader">
     <p id="stats"></p>
-    <script src="main.js"></script>
     <script>
         // load dataset and create table
         var chart, secondChart;
