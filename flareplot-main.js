@@ -71,8 +71,8 @@ function createFlareplot(width, json, divId){
 
             svg.append("svg:path")
                 .attr("class", "arc")
-                .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI))
-                .on("mousedown", mousedown);
+                .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI));
+                //.on("mousedown", mousedown);
 
             d3.select(".switchButton").on("click", function() {
                 transitionToCluster();
@@ -154,9 +154,9 @@ function createFlareplot(width, json, divId){
                 .on("input", function(){fireTickListeners(this.value);} );
 
 
-            d3.select(window)
-                .on("mousemove", mousemove)
-                .on("mouseup", mouseup);
+            //d3.select(window)
+            //    .on("mousemove", mousemove)
+            //    .on("mouseup", mouseup);
 
 
             //Set up controls
@@ -409,43 +409,43 @@ function createFlareplot(width, json, divId){
             fireTickListeners(curFrame);
         }
 
-        function mouse(e) {
-            return [e.pageX - rx, e.pageY - ry];
-        }
+        //function mouse(e) {
+        //    return [e.pageX - rx, e.pageY - ry];
+        //}
 
-        function mousedown() {
-            m0 = mouse(d3.event);
-            d3.event.preventDefault();
-        }
+        //function mousedown() {
+        //    m0 = mouse(d3.event);
+        //    d3.event.preventDefault();
+        //}
 
-        function mousemove() {
-            if (m0) {
-                var m1 = mouse(d3.event),
-                    dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
-                div.style("-webkit-transform", "translateY(" + (ry - rx) + "px)rotateZ(" + dm + "deg)translateY(" + (rx - ry) + "px)");
-            }
-        }
+        //function mousemove() {
+        //    if (m0) {
+        //        var m1 = mouse(d3.event),
+        //            dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
+        //        div.style("-webkit-transform", "translateY(" + (ry - rx) + "px)rotateZ(" + dm + "deg)translateY(" + (rx - ry) + "px)");
+        //    }
+        //}
 
-        function mouseup() {
-            if (m0) {
-                var m1 = mouse(d3.event),
-                    dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
+        //function mouseup() {
+        //    if (m0) {
+        //        var m1 = mouse(d3.event),
+        //            dm = Math.atan2(cross(m0, m1), dot(m0, m1)) * 180 / Math.PI;
 
-                rotate += dm;
-                if (rotate > 360) rotate -= 360;
-                else if (rotate < 0) rotate += 360;
-                m0 = null;
+        //        rotate += dm;
+        //        if (rotate > 360) rotate -= 360;
+        //        else if (rotate < 0) rotate += 360;
+        //        m0 = null;
 
-                div.style("-webkit-transform", null);
+        //        div.style("-webkit-transform", null);
 
-                svg
-                    .attr("transform", "translate(" + rx + "," + ry + ")rotate(" + rotate + ")")
-                    .selectAll("g.node text")
-                    .attr("dx", function(d) { return (d.x + rotate) % 360 < 180 ? 8 : -8; })
-                    .attr("text-anchor", function(d) { return (d.x + rotate) % 360 < 180 ? "start" : "end"; })
-                    .attr("transform", function(d) { return (d.x + rotate) % 360 < 180 ? null : "rotate(180)"; });
-            }
-        }
+        //        svg
+        //            .attr("transform", "translate(" + rx + "," + ry + ")rotate(" + rotate + ")")
+        //            .selectAll("g.node text")
+        //            .attr("dx", function(d) { return (d.x + rotate) % 360 < 180 ? 8 : -8; })
+        //            .attr("text-anchor", function(d) { return (d.x + rotate) % 360 < 180 ? "start" : "end"; })
+        //            .attr("transform", function(d) { return (d.x + rotate) % 360 < 180 ? null : "rotate(180)"; });
+        //    }
+        //}
 
 
         function mouseoverNode(d) {

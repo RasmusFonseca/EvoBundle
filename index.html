@@ -15,7 +15,7 @@
     <style type="text/css">
 
         path.arc {
-            cursor: move;
+            /*cursor: move;*/
             fill: #fff;
         }
 
@@ -140,13 +140,18 @@
         function load_dataset(json) {
             d3.select("section.main-content").style("display", "block");
             d3.select("section.main-upload").style("display", "none");
-            chart = getChart(800, json);
-            secondChart = getChart(600, json, 'secondDiv');
+            chart = createFlareplot(800, json);
+            //secondChart = getChart(600, json, 'secondDiv');
         }
 
         function loadExample(fileName){
-            d3.text(fileName, function(rawtext){
-                load_dataset(rawtext);
+
+            //d3.json("real_example-salt_bridges.json", function(data) {
+            //  var plot = createFlareplot(600, data, "evobundlediv");
+            //});
+            d3.json(fileName, function(json){
+                load_dataset(json);
+
                 var radiodiv = d3.select('body')
                     .append("div")
                     .style("position", "absolute")
@@ -197,6 +202,7 @@
                     .attr("value",function(d){return d;})
                     .on("click",function(d,i){ chart.setTrack(i); });
 
+
                 trackSpans.append("span").text(function(d){ return " "+d; });
                 trackSpans.append("br");
                 
@@ -210,14 +216,7 @@
 
 <section class="main-content" style="display:none">
 
-    <div id="evobundlediv">
-        <div style="position:absolute;top:10px;left:20px;font-size:18px;">tension: <input style="position:relative;top:3px;width:177px" type="range" min="0" max="100" value="85" /></div>
-        <div id="evocontrols" style="position:absolute;top:780px;left:0px;width:100%;font-size:18px;">
-            <span  id="controls"></span>
-            <input id="timeRange" type="range" min="0" max="1000" value="0" />
-            <span id="timeLabel">0</span>
-        </div>
-    </div>
+    <div id="evobundlediv"></div>
 
     <div id="secondDiv">
 
@@ -225,6 +224,9 @@
 
 
 </section>
+
+<script>
+</script>
 
 </body>
 </html>
