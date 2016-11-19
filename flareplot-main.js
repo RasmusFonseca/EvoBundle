@@ -580,7 +580,7 @@ function createFlareplot(width, json, divId){
                                 currentIndex++;
                             }
                         }
-                    } else if (delta == -2 || delta == -4) { // (5 < 3)
+                    } else if (delta < 0) { // (5 < 3)
                         // newer spline has less target point than older spline
                         var recomposedNewSpline = [];
                         // -2, 5 to 3   => 0 -0, 1-0, 2-1, 3-2,4-2  (simplespline 3, oldSpine = 5)
@@ -588,7 +588,7 @@ function createFlareplot(width, json, divId){
                         delta = Math.abs(delta);
                         for (i = 0, currentIndex = 0; i < oldSpline.length; i++) {
                             recomposedNewSpline[i] = simpleSpline[currentIndex];
-                            if (i <= delta / 2 || currentIndex >= oldSpline.length - 1) {} else {
+                            if (i <= Math.floor(delta / 2) || currentIndex >= simpleSpline.length - 1) {} else {
                                 currentIndex++;
                             }
                         }
@@ -610,7 +610,7 @@ function createFlareplot(width, json, divId){
                             // we do not want to rebind data here
                         }
 
-                    }, 0);
+                    }, 500);
 
                     return function(t) {
                         return line(interpolate(t))
@@ -722,7 +722,8 @@ function createFlareplot(width, json, divId){
             setTrack: setTrack,
             setTree: setTree,
             getTreeNames: getTreeNames,
-            getTrackNames: getTrackNames
+            getTrackNames: getTrackNames,
+            graph: graph// for debugging purposes
         }
     }) ();
 }
