@@ -153,13 +153,6 @@ function createFlareplot(width, json, divId){
                 });
 
 
-            d3.select("input[id=timeRange]")
-                .attr("max", links.length-1)
-                .on("input", function(){
-                    fireTickListeners(this.value);
-                }
-                );
-
 
             //d3.select(window)
             //    .on("mousemove", mousemove)
@@ -257,6 +250,17 @@ function createFlareplot(width, json, divId){
                 .style("line-height", ch+"px")
                 .style("height", ch+"px")
                 .style("bottom", "13px");
+
+
+            // we need to that here as we
+            d3.select("input#timeRange")
+                .attr("max", links.length-1)
+                .on("input.tick", function(){
+                    fireTickListeners(this.value);
+                });
+
+
+
         }
 
         /**
@@ -720,7 +724,6 @@ function createFlareplot(width, json, divId){
         // the link and the index in the spline array
         function buildSplineIndex(splines) {
             var linkKeyToSplineIdx = {};
-            console.log(splines);
             splines.forEach(function(spline, idx){
                 var source = spline[0].key;
                 var target = spline[spline.length-1].key;
