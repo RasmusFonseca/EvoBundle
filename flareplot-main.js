@@ -6,8 +6,10 @@ function createFlareplot(width, json, divId){
         h   = w,
         rx  = w / 2,
         ry  = w / 2,
-        m0,
         rotate = 0;
+
+    var summaryTransitionTime = 400;
+    var summaryRange = [4, 10];
 
     if (!divId) {
         divId = '#evobundlediv';
@@ -40,8 +42,6 @@ function createFlareplot(width, json, divId){
     var toggledNodes = {};
     var splineDico;
 
-    var clusterListeners = [];
-
     return (function() {
 
         function create_bundle(json) {
@@ -54,10 +54,8 @@ function createFlareplot(width, json, divId){
                 .radius(function(d) { return d.y; })
                 .angle(function(d) { return d.x / 180 * Math.PI; });
 
-
             d3.select(divId).style("position","relative");
 
-            // Chrome 15 bug: <http://code.google.com/p/chromium/issues/detail?id=98951>
             div = d3.select(divId).insert("div")
                 .style("width", w + "px")
                 .style("height", w + "px")
@@ -81,7 +79,7 @@ function createFlareplot(width, json, divId){
             d3.select(divId + " .summaryButton").on("click", function() {
                 transitionToSummary();
             });
-            //var json = JSON.parse(rawText);
+
             graph = parse(json);
             nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
             links = graph.trees[selectedTree].frames;
@@ -128,7 +126,6 @@ function createFlareplot(width, json, divId){
                 .endAngle(arcW);
 
             svg.selectAll("g.trackElement")
-            //.data(nodes.filter(function(n) { return !n.children; }))
                 .data(graph.tracks[selectedTrack].trackProperties, function(d){ return d.nodeName; })
                 .enter().append("svg:g")
                 .attr("class", "trackElement")
@@ -248,6 +245,17 @@ function createFlareplot(width, json, divId){
                 .style("line-height", ch+"px")
                 .style("height", ch+"px")
                 .style("bottom", "13px");
+
+
+            // we need to that here as we
+            d3.select("input#timeRange")
+                .attr("max", links.length-1)
+                .on("input.tick", function(){
+                    fireTickListeners(this.value);
+                });
+
+
+
         }
 
         /**
@@ -488,7 +496,10 @@ function createFlareplot(width, json, divId){
             assignCluster(graph.trees[selectedTree], graph.trees[oldTreeIdx], graph);
             var recomposedSplines = [];
             nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
-            links = graph.trees[selectedTree].frames;
+
+            links = summaryMode ?
+                Object.values(graph.trees[selectedTree].summaryEdges) :
+                graph.trees[selectedTree].frames[curFrame];
 
             svg.selectAll("g.node")
                 .data(nodes.filter(function(n) { return !n.children; }), function(d) { return d.key})
@@ -525,14 +536,17 @@ function createFlareplot(width, json, divId){
 
 
             // transition the splines
-            var newSplines = bundle(graph.trees[selectedTree].frames[curFrame]);
+            var newSplines =
+                summaryMode ? bundle(Object.values((graph.trees[selectedTree].summaryEdges))) :
+                bundle(graph.trees[selectedTree].frames[curFrame]);
             var newSplinesDico = buildSplineIndex(newSplines);
 
 
             var done = false;
-            var path = svg.selectAll("path.link").data(links[curFrame], function(d,i){
-                return "source-" + d.source.key + "target-" + d.target.key;
+            var path = svg.selectAll("path.link").data(links, function(d,i){
+                return  d.key;
             });
+
 
             // i dont understand how d3 orders the spline array, so we need
             path.transition().attrTween("d",
@@ -694,13 +708,6 @@ function createFlareplot(width, json, divId){
             // for whatever reasons, i have 2 MORE nodes here !!
             return clusterDefinition;
         }
-
-        function fireClusterListeners(clusteringEnabled){
-            for(var i=0;i<clusterListeners.length;i++){
-                clusterListeners[i](clusteringEnabled);
-            }
-        }
-
         // For all splines in the array, create an index that match the key of
         // the link and the index in the spline array
         function buildSplineIndex(splines) {
@@ -714,6 +721,73 @@ function createFlareplot(width, json, divId){
             return linkKeyToSplineIdx;
         }
 
+        function transitionToSummary(){
+            //links contains all the frames
+            if (summaryMode) {
+                // take from setFrame, but with transition
+                links = graph.trees[selectedTree].frames
+                splines = bundle(links[curFrame]);
+                splineDico = buildSplineIndex(splines);
+                path = svg.selectAll("path.link")
+                    .data(links[curFrame], function(d){ return d.key});
+
+                path.attr("class", function(d) {
+                    var ret = "link source-" + d.source.key + " target-" + d.target.key;
+                    if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+                        ret+=" toggled";
+                    return ret;
+                });
+
+                path.transition()
+                    .duration(summaryTransitionTime)
+                    .style("stroke-width",function(d){ return d.width? d .width : stdEdgeWidth; });
+
+                path.exit()
+                    .transition()
+                    .duration(summaryTransitionTime)
+                    .style("stroke-width", 0)
+                    .remove();
+                summaryMode = !summaryMode;
+                return;
+            }
+
+            if(playing) { playpause(); }
+            summaryMode = !summaryMode;
+            summaryLinks = Object.values(graph.trees[selectedTree].summaryEdges);
+
+            //TODO(chab) decide how we set the extent for the width of the links
+            var summaryLinksExtent = d3.extent(summaryLinks, function(d) {
+                return d.width;
+            });
+
+            var linkWidthScale = d3.scale.linear()
+                .domain(summaryLinksExtent)
+                .range(summaryRange);
+
+            splines = bundle(summaryLinks);
+            splineDico = buildSplineIndex(splines);
+
+            var path = svg.selectAll("path.link")
+                .data(summaryLinks, function(d,i){
+                    return d.key;
+                });
+
+            path.enter().insert("svg:path")
+                .style("stroke-width",function(d){ return 0; });
+            path.attr("class", function(d) {
+                var ret = "link source-" + d.source.key + " target-" + d.target.key;
+                if( d.source.key in toggledNodes || d.target.key in toggledNodes)
+                    ret+=" toggled";
+                return ret;
+            }).attr("d", function(d, i) { return line(splines[i]); })
+                .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
+                .transition().duration(summaryTransitionTime)
+                .style("stroke-width",function(d){
+                    return linkWidthScale(d.width)
+                });
+            path.exit().remove();
+        }
+
         create_bundle(json);
 
         return {
@@ -721,6 +795,7 @@ function createFlareplot(width, json, divId){
             setTree: setTree,
             getTreeNames: getTreeNames,
             getTrackNames: getTrackNames,
+            toggleSummary: transitionToSummary,
             graph: graph// for debugging purposes
         }
     }) ();

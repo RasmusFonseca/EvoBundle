@@ -85,6 +85,7 @@ function parse(graph){
     //Go through graph.edges and convert name1, name2, and frames to target and source object arrays
     graph.trees.forEach(function(t){
         t.frames = [];
+        var summaryEdges = {};
         graph.edges.forEach(function(e,i){
             //Set source and target of edge
             var edge = {
@@ -94,6 +95,20 @@ function parse(graph){
                 color  : e.color || graph.defaults.edgeColor || "rgba(100,100,100,100)",
                 width  : e.width || graph.defaults.edgeWidth || 1
             };
+
+            var edgeKey = edge.key;
+            if (!summaryEdges[edgeKey]) {
+                summaryEdges[edgeKey] = {
+                    source: edge.source,
+                    target: edge.target,
+                    key: edge.key,
+                    color: edge.color,
+                    width: 1
+                }
+            } else {
+                summaryEdges[edgeKey].width++;
+            }
+
             //edge.source = t.tree[edge.name1]; console.assert(edge.source);
             //edge.target = t.tree[edge.name2]; console.assert(edge.target);
             //edge.key = ""+i;
@@ -105,6 +120,7 @@ function parse(graph){
                 t.frames[f].push(edge);
             });
         });
+        t.summaryEdges = summaryEdges;
     });
 
     // =========== Parse `tracks` section ========== \\
