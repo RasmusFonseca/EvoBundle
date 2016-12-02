@@ -74,11 +74,11 @@ function createFlareplot(width, json, divId){
                 .attr("d", d3.svg.arc().outerRadius(ry - 120).innerRadius(0).startAngle(0).endAngle(2 * Math.PI));
                 //.on("mousedown", mousedown);
 
-            d3.select(".switchButton").on("click", function() {
+            d3.select(divId + " .switchButton").on("click", function() {
                 transitionToCluster();
             });
 
-            d3.select(".summaryButton").on("click", function() {
+            d3.select(divId + " .summaryButton").on("click", function() {
                 transitionToSummary();
             });
             //var json = JSON.parse(rawText);
@@ -141,17 +141,13 @@ function createFlareplot(width, json, divId){
                 .style("fill", function(d){ return d.color; })
                 .attr("d", arc);
 
-            d3.select("input[type=range]")
+            d3.select(divId + " input[type=range]")
                 .on("input", function() {
                     line.tension(this.value / 100);
                     var path = svg.selectAll("path.link"); // you need to reselect cause the data can have changed
                     path.attr("d", function(d, i) { return line(splines[i]); });
                 });
 
-
-            d3.select("input[id=timeRange]")
-                .attr("max", links.length-1)
-                .on("input", function(){fireTickListeners(this.value);} );
 
 
             //d3.select(window)
@@ -235,7 +231,9 @@ function createFlareplot(width, json, divId){
                 .attr("max","1000")
                 .attr("value","0")
                 .style("width",(w-2*cw-20)+"px")
-                .style("height", ch+"px");
+                .style("height", ch+"px")
+                .attr("max", links.length-1)
+                .on("input", function(){fireTickListeners(this.value);} );
 
         //    <span id="timeLabel">0</span>
             //d3.select("div#evocontrols #timeLabel")
@@ -304,7 +302,7 @@ function createFlareplot(width, json, divId){
                 return // make no sense to setFrame in summary mode
             }
             curFrame = frame;
-            d3.select("span[id=timeLabel]")
+            d3.select(divId + " span[id=timeLabel]")
                 .text(""+frame);
 
             splines = bundle(links[frame]);
@@ -345,7 +343,7 @@ function createFlareplot(width, json, divId){
         }
 
         function playTick(){
-            var timeRange = d3.select("input[id=timeRange]");
+            var timeRange = d3.select(divId + " input[id=timeRange]");
             var curValue = parseInt(timeRange[0][0].value);
             if(playing && curValue+frameskip<links.length-1) {
                 var skip = Math.min(frameskip, links.length-1-frameskip);
@@ -360,7 +358,7 @@ function createFlareplot(width, json, divId){
 
             //Update play/pause symbol
             var sym = playing?"#":">";
-            d3.select("#playpause")
+            d3.select(divId + " #playpause")
                 .html(sym);
         }
 
@@ -372,7 +370,7 @@ function createFlareplot(width, json, divId){
         }
 
         function reverse(){
-            var timeRange = d3.select("input[id=timeRange]");
+            var timeRange = d3.select(divId + " input[id=timeRange]");
             var minVal = timeRange.attr("min");
             timeRange[0][0].value = minVal;
             fireTickListeners(minVal);
@@ -381,7 +379,7 @@ function createFlareplot(width, json, divId){
 
         function forward(){
             playing = false;
-            var timeRange = d3.select("input[id=timeRange]");
+            var timeRange = d3.select(divId + " input[id=timeRange]");
             var maxVal = timeRange.attr("max");
             timeRange[0][0].value = maxVal;
             fireTickListeners(maxVal);

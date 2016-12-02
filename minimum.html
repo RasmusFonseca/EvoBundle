@@ -6,7 +6,6 @@
     <style type="text/css">
 
         path.arc {
-            cursor: move;
             fill: #fff;
         }
 
@@ -82,9 +81,13 @@
 </head>
 <body>
   <div id="flare-container"></div>
+  <div id="flare-container2"></div>
   <script> 
     d3.json("real_example-salt_bridges.json", function(data) {
       var plot = createFlareplot(600, data, "flare-container");
+    });
+    d3.json("real_example-salt_bridges.json", function(data) {
+      var plot2 = createFlareplot(800, data, "flare-container2");
     });
   </script>
 </body>
