@@ -243,7 +243,77 @@ function create_bundle(rawText) {
         .append("path")
         .attr("transform", function(d) { return "rotate(" + (d.x )+ ")" ; })
         .style("fill", function(d){ return ("color" in d)?d.color:"white"; })
-        .attr("d", arc);
+        .attr("d", arc)
+
+
+    // some crazy stuff
+    function clickcancel() {
+        // we want to a distinguish single/double click
+        // details http://bl.ocks.org/couchand/6394506
+        var event = d3.dispatch('click', 'dblclick');
+        function cc(selection) {
+            var down, tolerance = 5, last, wait = null, args;
+            // euclidean distance
+            function dist(a, b) {
+                return Math.sqrt(Math.pow(a[0] - b[0], 2), Math.pow(a[1] - b[1], 2));
+            }
+            selection.on('mousedown', function() {
+                down = d3.mouse(document.body);
+                last = +new Date();
+                args = arguments;
+                console.log('clicked');
+            });
+            selection.on('mouseup', function() {
+                var self = this;
+                if (dist(down, d3.mouse(document.body)) > tolerance) {
+                    return;
+                } else {
+                    if (wait) {
+                        window.clearTimeout(wait);
+                        wait = null;
+                        event.dblclick.apply(self, args);
+                    } else {
+                        wait = window.setTimeout((function() {
+                            return function() {
+                                event.click.apply(self, args);
+                                wait = null;
+                            };
+                        })(), 300);
+                    }
+                }
+            });
+        };
+        return d3.rebind(cc, event, 'on');
+    }
+
+    var cc = clickcancel();
+    d3.selectAll('g.nodeBar > path').call(cc);
+    cc.on("dblclick",function(d){
+        var transform = d3.transform(d3.select('svg > g').attr('transform'));
+        transform.scale = [1, 1];
+        transform.translate = [400, 400];
+        d3.select('svg > g')
+            .transition(200)
+            .attr('transform', transform);
+
+    });
+    cc.on("click", function(e) {
+        console.log (this,e);
+            var transform = d3.transform(d3.select('svg > g').attr('transform'));
+            var transformNode = d3.transform(d3.select(this).attr('transform'));
+            var rotate = - transformNode.rotate;
+            var halfHeight = 400;
+            var moveupTo = halfHeight * 1.6;
+            transform.scale = [1.6, 1.6];
+            transform.rotate = rotate;
+            transform.translate = [400, 600];
+            console.log(rotate, transform);
+            d3.select('svg > g')
+                .transition(200)
+                .attr('transform', transform);
+        });
+
+
 
 
     /* we dont display cluster bar right now
