@@ -108,7 +108,7 @@ function createFlareplot(width, json, divId){
                 .attr("class", "node")
                 .attr("id", function(d) { return "node-" + d.key; })
                 .attr("transform", function(d) { return "rotate(" + (d.x - 90) + ")translate(" + d.y + ")"; })
-                .append("svg:text")
+                .append("text")
                 .attr("dx", function(d) { return d.x < 180 ? 8 : -8; })
                 .attr("dy", ".31em")
                 .attr("text-anchor", function(d) { return d.x < 180 ? "start" : "end"; })
@@ -118,10 +118,17 @@ function createFlareplot(width, json, divId){
                 .on("mouseout", mouseoutNode)
                 .on("click", toggleNode);
 
+            var maxWidth = d3.max(svg.selectAll("text")[0], function(t){ return t.getBBox().width; });
+
             var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
             var arc = d3.svg.arc()
                 .innerRadius(ry-80)
-                .outerRadius(ry-70)
+                .outerRadius(function(d,i){ 
+                  var sz = d.size;
+                  if(!sz) sz = 0.0;
+                  var or = ry-80+sz*15; 
+                  return or; 
+                })
                 .startAngle(-arcW)
                 .endAngle(arcW);
 
@@ -490,7 +497,6 @@ function createFlareplot(width, json, divId){
         }
 
         function setTree(treeIdx){
-
             var oldTreeIdx = selectedTree;
             selectedTree = treeIdx;
             assignCluster(graph.trees[selectedTree], graph.trees[oldTreeIdx], graph);
@@ -518,9 +524,19 @@ function createFlareplot(width, json, divId){
             var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
             var arc = d3.svg.arc()
                 .innerRadius(ry-80)
-                .outerRadius(ry-70)
+                .outerRadius(function(d,i){ 
+                  var sz = d.size;
+                  if(!sz) sz = 0.0;
+                  var or = ry-80+sz*15; 
+                  return or; 
+                })
                 .startAngle(-arcW)
                 .endAngle(arcW);
+            //var arc = d3.svg.arc()
+            //    .innerRadius(ry-80)
+            //    .outerRadius(ry-70)
+            //    .startAngle(-arcW)
+            //    .endAngle(arcW);
 
             svg.selectAll("g.trackElement")
                 .select("path")
@@ -646,9 +662,20 @@ function createFlareplot(width, json, divId){
             var arcW = 250.0/(graph.nodeNames.length)*Math.PI/360;
             var arc = d3.svg.arc()
                 .innerRadius(ry-80)
-                .outerRadius(ry-70)
+                .outerRadius(function(d,i){ 
+                  var sz = d.size;
+                  if(!sz) sz = 0.0;
+console.log(sz);
+                  var or = ry-80+sz*15; 
+                  return or; 
+                })
                 .startAngle(-arcW)
                 .endAngle(arcW);
+            //var arc = d3.svg.arc()
+            //    .innerRadius(ry-80)
+            //    .outerRadius(ry-70)
+            //    .startAngle(-arcW)
+            //    .endAngle(arcW);
 
             svg.selectAll("g.trackElement")
                 .data(graph.tracks[selectedTrack].trackProperties, function(d){ return d.nodeName; })
