@@ -278,7 +278,7 @@ function create_bundle(rawText) {
                                 event.click.apply(self, args);
                                 wait = null;
                             };
-                        })(), 100);
+                        })(), 200);
                     }
                 }
             });
