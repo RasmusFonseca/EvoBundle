@@ -1,0 +1,179 @@
+<html>
+<head>
+<style>
+  article{
+    border: 1px solid gray;
+    padding:20px;
+    margin-top: 30px;
+  }
+  @media only screen and (min-width: 800px) {
+    article{
+      margin-left: 100px;
+      margin-right: 100px;
+    }
+  }
+  pre{
+    background: #EEF;
+
+  }
+
+</style>
+</head>
+<body>
+<article class="markdown-body entry-content" itemprop="text"><h1><a id="user-content-flareplots" class="anchor" href="#flareplots" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Flareplots</h1>
+
+<p>Flareplots illustrate contacts between grouped nodes and are useful for exploring interaction graphs. They have a time-slider to illustrate the evolution of dynamically changing networks and circular layers of color-coded annotations.</p>
+
+<h2><a id="user-content-input-format" class="anchor" href="#input-format" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Input format</h2>
+
+<p>The input is a JSON-file that could look like the following:</p>
+
+<div class="highlight highlight-source-json"><pre>{
+  <span class="pl-s"><span class="pl-pds">"</span>edges<span class="pl-pds">"</span></span>:[
+    {<span class="pl-s"><span class="pl-pds">"</span>name1<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>ARG135<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>name2<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>ASP134<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>frames<span class="pl-pds">"</span></span>:[<span class="pl-c1">0</span>,<span class="pl-c1">1</span>,<span class="pl-c1">2</span>,<span class="pl-c1">3</span>,<span class="pl-c1">4</span>,<span class="pl-c1">6</span>,<span class="pl-c1">7</span>,<span class="pl-c1">8</span>,<span class="pl-c1">9</span>]},
+    {<span class="pl-s"><span class="pl-pds">"</span>name1<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>ASP134<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>name2<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>TRP161<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>frames<span class="pl-pds">"</span></span>:[<span class="pl-c1">4</span>,<span class="pl-c1">5</span>,<span class="pl-c1">6</span>,<span class="pl-c1">7</span>]},
+    {<span class="pl-s"><span class="pl-pds">"</span>name1<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>TYR223<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>name2<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>ARG135<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>frames<span class="pl-pds">"</span></span>:[<span class="pl-c1">4</span>,<span class="pl-c1">5</span>,<span class="pl-c1">6</span>,<span class="pl-c1">9</span>]},
+    {<span class="pl-s"><span class="pl-pds">"</span>name1<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>TYR223<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>name2<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>TYR306<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>frames<span class="pl-pds">"</span></span>:[<span class="pl-c1">0</span>,<span class="pl-c1">1</span>,<span class="pl-c1">2</span>,<span class="pl-c1">5</span>,<span class="pl-c1">6</span>,<span class="pl-c1">7</span>,<span class="pl-c1">8</span>]},
+    {<span class="pl-s"><span class="pl-pds">"</span>name1<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>TYR306<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>name2<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>VAL54<span class="pl-pds">"</span></span>,  <span class="pl-s"><span class="pl-pds">"</span>frames<span class="pl-pds">"</span></span>:[<span class="pl-c1">1</span>,<span class="pl-c1">4</span>,<span class="pl-c1">5</span>,<span class="pl-c1">6</span>,<span class="pl-c1">7</span>,<span class="pl-c1">8</span>]}
+  ]
+}</pre></div>
+
+<p>Here ARG135 and ASP134 interacts at times 0 to 4 and 6 to 9. Names are ordered alphabetically unless it is suffixed by a number in which case the number determines the order. </p>
+
+<p>The input-json can contain three sections</p>
+
+<ul>
+<li>edges - a list of edge-definitions and the time-points in which they exist</li>
+<li>trees - a list of tree-definitions each indicating an ordering and grouping of the nodes</li>
+<li>tracks - a list of node-properties each indicating node color, weight and possibly annotation. </li>
+<li>defaults - an object that specifies default properties of edges and nodes</li>
+</ul>
+
+<h3><a id="user-content-edges" class="anchor" href="#edges" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Edges</h3>
+
+<p>This section has the format</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>edges<span class="pl-pds">"</span></span>:[
+    {<span class="pl-s"><span class="pl-pds">"</span>name1<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>name2<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>frames<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;int-list&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>width<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;int&gt;</span>},
+    <span class="pl-ii">...</span>
+  ]</pre></div>
+
+<p>The fields <code>name1</code>, <code>name2</code>, and <code>frames</code> are mandatory but the others are not. If no <code>trees</code> or <code>tracks</code> are specified, the names used in the <code>edges</code> section will be collected and used as node-definitions. The <code>color</code> field follows CSS standards, so can be either <code>red</code>, <code>#FF0000</code>, <code>rgb(255,0,0)</code>.</p>
+
+<p>The edge-width is measured in pixels. </p>
+
+<h3><a id="user-content-trees" class="anchor" href="#trees" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Trees</h3>
+
+<p>This section has the format</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>trees<span class="pl-pds">"</span></span>:[
+    { <span class="pl-s"><span class="pl-pds">"</span>treeName<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>treePaths<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string-list&gt;</span> },
+     <span class="pl-ii">...</span>
+  ]</pre></div>
+
+<p>Each tree has a name and a set of paths. Each "path" is a dot-separated list of branches in the path from the node to the root in a tree. This tree is used to order and group nodes. In the following example, <code>Asn1</code> and <code>Pro2</code> will be placed in the same group because theyre both children of <code>helix1</code> while <code>His3</code> will be placed in a separate group. </p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>trees<span class="pl-pds">"</span></span>:[
+    { <span class="pl-s"><span class="pl-pds">"</span>treeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Group-order<span class="pl-pds">"</span></span>,
+      <span class="pl-s"><span class="pl-pds">"</span>treePaths<span class="pl-pds">"</span></span>: [
+        <span class="pl-s"><span class="pl-pds">"</span>Root.helix1.Asn1<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>Root.helix1.Pro2<span class="pl-pds">"</span></span>,
+        <span class="pl-s"><span class="pl-pds">"</span>Root.helix2.His3<span class="pl-pds">"</span></span>
+      ]
+    }
+  ]</pre></div>
+
+<h3><a id="user-content-tracks" class="anchor" href="#tracks" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Tracks</h3>
+
+<p>This section has the format</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>tracks<span class="pl-pds">"</span></span>:[
+    { <span class="pl-s"><span class="pl-pds">"</span>trackName<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, 
+      <span class="pl-s"><span class="pl-pds">"</span>nodeProperties<span class="pl-pds">"</span></span>: [
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;float&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>label<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>},
+        <span class="pl-ii">...</span>
+      ]
+    }
+    <span class="pl-ii">...</span>
+  ]</pre></div>
+
+<p>Each track specifies visual cues for each of the nodes. If <code>color</code> is specified and <code>size</code> is non-zero a box will appear next to the node-label with the indicated color. The width of the box depends on the number of nodes around the flare-plot and the height of the box by the <code>size</code> parameter which should be a number between 0 and 1. </p>
+
+<p>If <code>color</code> is not specified but <code>label</code> is, the track will contain a text-label. The node-labels are considered a special track which by default is enabled and placed closest to the center. This default can be overwritten by adding a special track named "nodelabels". In the following example, same-sized boxes will appear as the inner track and node-labels appear as the outer track</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>tracks<span class="pl-pds">"</span></span>:[
+    { <span class="pl-s"><span class="pl-pds">"</span>trackName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Boxes<span class="pl-pds">"</span></span>,
+      <span class="pl-s"><span class="pl-pds">"</span>nodeProperties<span class="pl-pds">"</span></span>:[
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Asn1<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>blue<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-c1">1.0</span>},
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Pro2<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>blue<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-c1">1.0</span>},
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>His3<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>red<span class="pl-pds">"</span></span>,  <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-c1">1.0</span>}
+      ]
+    },
+    { <span class="pl-s"><span class="pl-pds">"</span>trackName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>nodelabels<span class="pl-pds">"</span></span>, 
+      <span class="pl-s"><span class="pl-pds">"</span>nodeProperties<span class="pl-pds">"</span></span>:[
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Asn1<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>label<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Asn1<span class="pl-pds">"</span></span>},
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Pro2<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>label<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Pro2<span class="pl-pds">"</span></span>},
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>His3<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>label<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>His3<span class="pl-pds">"</span></span>},
+      ]
+    }
+  ]</pre></div>
+
+<p>The <code>nodeProperties</code> entry is not required, so the above example could equivalently be written</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>tracks<span class="pl-pds">"</span></span>:[
+    { <span class="pl-s"><span class="pl-pds">"</span>trackName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Boxes<span class="pl-pds">"</span></span>,
+      <span class="pl-s"><span class="pl-pds">"</span>nodeProperties<span class="pl-pds">"</span></span>:[
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Asn1<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>blue<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-c1">1.0</span>},
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>Pro2<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>blue<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-c1">1.0</span>},
+        {<span class="pl-s"><span class="pl-pds">"</span>nodeName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>His3<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>red<span class="pl-pds">"</span></span>,  <span class="pl-s"><span class="pl-pds">"</span>size<span class="pl-pds">"</span></span>:<span class="pl-c1">1.0</span>}
+      ]
+    },
+    { <span class="pl-s"><span class="pl-pds">"</span>trackName<span class="pl-pds">"</span></span>:<span class="pl-s"><span class="pl-pds">"</span>nodelabels<span class="pl-pds">"</span></span> }
+  ]</pre></div>
+
+<h3><a id="user-content-defaults" class="anchor" href="#defaults" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Defaults</h3>
+
+<p>This section has the format</p>
+
+<div class="highlight highlight-source-json"><pre>  <span class="pl-s"><span class="pl-pds">"</span>defaults<span class="pl-pds">"</span></span>:{<span class="pl-s"><span class="pl-pds">"</span>color<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;string&gt;</span>, <span class="pl-s"><span class="pl-pds">"</span>width<span class="pl-pds">"</span></span>:<span class="pl-ii">&lt;int&gt;</span>}</pre></div>
+
+<p>where none of the fields are mandatory, but if specified they set edge-defaults. When a node is selected, the adjacent interactions are highlighted by removing the transparency. The default color should therefore ideally have a bit of transparency, which can be specified using e.g. <code>rgba(255,0,0,100)</code>. </p>
+
+<h1><a id="user-content-developer-api" class="anchor" href="#developer-api" aria-hidden="true"><svg aria-hidden="true" class="octicon octicon-link" height="16" version="1.1" viewBox="0 0 16 16" width="16"><path fill-rule="evenodd" d="M4 9h1v1H4c-1.5 0-3-1.69-3-3.5S2.55 3 4 3h4c1.45 0 3 1.69 3 3.5 0 1.41-.91 2.72-2 3.25V8.59c.58-.45 1-1.27 1-2.09C10 5.22 8.98 4 8 4H4c-.98 0-2 1.22-2 2.5S3 9 4 9zm9-3h-1v1h1c1 0 2 1.22 2 2.5S13.98 12 13 12H9c-.98 0-2-1.22-2-2.5 0-.83.42-1.64 1-2.09V6.25c-1.09.53-2 1.84-2 3.25C6 11.31 7.55 13 9 13h4c1.45 0 3-1.69 3-3.5S14.5 6 13 6z"></path></svg></a>Developer API</h1>
+
+<p>The following outlines an API for developers wishing to incorporate a flareplot on a homepage. The general template should be </p>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">html</span>&gt;
+&lt;<span class="pl-ent">head</span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>d3.js<span class="pl-pds">"</span></span> /&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>flareplot-main.js<span class="pl-pds">"</span></span> /&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>flareplot-parser.js<span class="pl-pds">"</span></span> /&gt;
+&lt;/<span class="pl-ent">head</span>&gt;
+&lt;<span class="pl-ent">body</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>flare-container<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">div</span>&gt;
+<span class="pl-s1">    &lt;<span class="pl-ent">script</span>&gt; </span>
+<span class="pl-s1">      <span class="pl-smi">d3</span>.<span class="pl-en">json</span>(<span class="pl-s"><span class="pl-pds">"</span>plotfile.json<span class="pl-pds">"</span></span>, <span class="pl-k">function</span>(<span class="pl-smi">data</span>) {</span>
+<span class="pl-s1">        <span class="pl-k">var</span> plot <span class="pl-k">=</span> <span class="pl-en">createFlareplot</span>(<span class="pl-s"><span class="pl-pds">"</span>flare-container<span class="pl-pds">"</span></span>, data);</span>
+<span class="pl-s1">      });</span>
+<span class="pl-s1">    &lt;/<span class="pl-ent">script</span>&gt;</span>
+&lt;/<span class="pl-ent">body</span>&gt;
+&lt;/<span class="pl-ent">html</span>&gt;</pre></div>
+
+<p>Where <code>plotfile.json</code> contains a json file with the format specified above.</p>
+
+<p>The following functions are available after a dataset has been loaded:</p>
+
+<ul>
+<li><code>plot.getTrees()</code> - Returns list of tree-names</li>
+<li><code>plot.setTree(t)</code> - Updates the ordering of nodes to reflect the tree with index <code>t</code></li>
+<li><code>plot.getTracks()</code> - Returns list of track-names</li>
+<li><code>plot.setTrack(t)</code> - Updates the node colors/annotation to reflect the track with index <code>t</code></li>
+<li><code>plot.addTickListener(l)</code> - Add a callback function, <code>l</code>, that gets invoked whenever the time-frame changes. This function must take 2 arguments. The first will be the current frame-number, and the second will be a list of tuples indicating 1) name of first and second node, 2) edge color, and 3) edge width.</li>
+<li><code>plot.addNodeToggleListener(l)</code> - </li>
+<li><code>plot.addNodeHoverListener(l)</code> - </li>
+<li><code>plot.addEdgeToggleListener(l)</code> - </li>
+<li><code>plot.addEdgeHoverListener(l)</code> - </li>
+</ul>
+</article>
+</body>
+</html>
