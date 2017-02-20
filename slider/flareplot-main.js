@@ -36,6 +36,7 @@ function createFlareplot(width, json, divId){
     var stdEdgeColor = "rgba(0,0,0,200)";
     var stdEdgeWidth = 2;
     var svg, div, bundle, line, nodes, splines, links, graph;
+    var alllinks, allsplines;
     var summaryMode = false;
 
     var selectedTree = 0;
@@ -87,8 +88,11 @@ function createFlareplot(width, json, divId){
             splines = bundle(links[0]);
             splineDico = buildSplineIndex(splines);
 
+            alllinks = graph.trees[selectedTree].allEdges;
+            allsplines = bundle(alllinks);
+
             var path = svg.selectAll("path.link")
-                .data(links[0], function(d,i){
+                .data(alllinks, function(d,i){
                     var key = "source-" + d.source.key + "target-" + d.target.key;
                     return key;
                 })
@@ -99,9 +103,11 @@ function createFlareplot(width, json, divId){
                         ret+=" toggled";
                     return ret;
                 })
-                .style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
+                .style("stroke-width",function(d){
+                    return 0;
+                })
                 .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
-                .attr("d", function(d, i) { return line(splines[i]); });
+                .attr("d", function(d, i) { return line(allsplines[i]); });
 
             svg.selectAll("g.node")
                 .data(nodes.filter(function(n) { return !n.children; }), function(d) { return d.key})
@@ -333,26 +339,24 @@ function createFlareplot(width, json, divId){
         var curFrame = 0;
 
         function setFrame(frame){
-            if (summaryMode) {
-                return // make no sense to setFrame in summary mode
-            }
+
             curFrame = frame;
-            d3.select(divId + " span[id=timeLabel]")
+            d3.select(divId + " div[id=timeLabel]")
                 .text(""+frame);
 
-            splines = bundle(links[frame]);
-            path = svg.selectAll("path.link")
-                .data(links[frame], function(d,i){ return "source-" + d.source.key + "target-" + d.target.key;});//, function(d){ return {source:d.source, target:d.target}; });
+            splines = bundle(alllinks);
+            var path = svg.selectAll("path.link");
 
-            path.enter().append("path")
-                .attr("class", function(d) {
-                    var ret = "link source-" + d.source.key + " target-" + d.target.key;
-                    if( d.source.key in toggledNodes || d.target.key in toggledNodes)
-                        ret+=" toggled";
-                    return ret;
-                });
-            //.attr("class", function(d) { return "link source-" + d.source.key + " target-" + d.target.key; });
-            path.style("stroke-width",function(d){ return d.width?d.width:stdEdgeWidth; })
+            var rangeStart = rangeSlider.rangeStart;
+            var rangeEnd   = rangeSlider.rangeEnd;
+            var widthScale = d3.scale.sqrt()
+                .domain([0,1000])
+                .range([0,10]);
+
+            path.style("stroke-width",
+                function(d,i){
+                    return widthScale(graph.edges[i].frames.rangeCount(rangeStart, rangeEnd));
+                })
                 .attr("class", function(d) {
                     var ret = "link source-" + d.source.key + " target-" + d.target.key;
                     if( d.source.key in toggledNodes || d.target.key in toggledNodes)
@@ -363,7 +367,6 @@ function createFlareplot(width, json, divId){
                 .style("stroke",function(d){ return ("color" in d)?d.color:stdEdgeColor; })
                 .attr("d", function(d, i) { return line(splines[i]); });
 
-            path.exit().remove();
 
             curFrame = frame;
         }
@@ -378,15 +381,16 @@ function createFlareplot(width, json, divId){
         }
 
         function playTick(){
-            var curValue = Math.floor(rangeSlider.rangeStart);
+            var curStart = Math.floor(rangeSlider.rangeStart);
+            var curEnd   = Math.ceil(rangeSlider.rangeEnd);
+            if( curEnd==links.length) playing = false;
+            var skip = Math.min(frameskip, links.length-curEnd);
 
-            if(playing && curValue+frameskip<links.length-1) {
-                var skip = Math.min(frameskip, links.length-1-frameskip);
-                rangeSlider.rangeStart = curValue + skip;
-                rangeSlider.rangeEnd = Math.max(rangeSlider.rangeEnd, rangeSlider.rangeStart);
+            if(playing && curEnd+skip<=links.length) {
+                rangeSlider.rangeStart = curStart + skip;
+                rangeSlider.rangeEnd = curEnd+skip;
                 rangeSlider.update();
-                fireTickListeners(curValue+skip);
-                //setFrame(curValue+skip);
+                fireTickListeners(curStart+skip);
 
                 setTimeout(playTick, 50);
             }else{
@@ -757,6 +761,7 @@ console.log(sz);
             // for whatever reasons, i have 2 MORE nodes here !!
             return clusterDefinition;
         }
+
         // For all splines in the array, create an index that match the key of
         // the link and the index in the spline array
         function buildSplineIndex(splines) {
