@@ -491,7 +491,11 @@ function createFlareplot(width, json, divId){
         function getTreeNames(){
             var ret = [];
             for ( t in graph.trees ){
-                ret.push(graph.trees[t].treeLabel);
+                if (!graph.trees[t].treeLabel) {
+                    ret.push("Non-named tree");
+                } else {
+                    ret.push(graph.trees[t].treeLabel);
+                }
             }
             return ret;
         }
@@ -652,7 +656,11 @@ function createFlareplot(width, json, divId){
         function getTrackNames(){
             var ret = [];
             for ( t in graph.tracks ){
-                ret.push(graph.tracks[t].trackLabel);
+                if (!graph.tracks[t].trackLabel) {
+                    ret.push('Non named track');
+                } else {
+                    ret.push(graph.tracks[t].trackLabel);
+                }
             }
             return ret;
         }
