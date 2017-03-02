@@ -38,4 +38,13 @@ for f,frame in enumerate(t[:4]):
 
 print("Writing hbonds to %s .."%out_file)
 
+with open(out_file,"w") as of:
+  of.write("{\n")
+  of.write("  \"edges\": [\n")
+  for resi1,resi2 in hbond_frames:
+    resn1 = t.topology.residue(resi1).name
+    resn2 = t.topology.residue(resi2).name
+    framelist = sorted(list(hbond_frames[(resi1,resi2)]))
+    of.write("    {\"name1\":\"%f\", \"name2\":\"%f\", \"frames\":%s },\n"%(resi1,resi2,str(framelist))
+  of.write("  ]\n")
 
