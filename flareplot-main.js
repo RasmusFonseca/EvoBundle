@@ -491,7 +491,11 @@ function createFlareplot(width, json, divId){
         function getTreeNames(){
             var ret = [];
             for ( t in graph.trees ){
-                ret.push(graph.trees[t].treeLabel);
+                if (!graph.trees[t].treeLabel) {
+                    ret.push("Non-named tree");
+                } else {
+                    ret.push(graph.trees[t].treeLabel);
+                }
             }
             return ret;
         }
@@ -652,7 +656,11 @@ function createFlareplot(width, json, divId){
         function getTrackNames(){
             var ret = [];
             for ( t in graph.tracks ){
-                ret.push(graph.tracks[t].trackLabel);
+                if (!graph.tracks[t].trackLabel) {
+                    ret.push('Non named track');
+                } else {
+                    ret.push(graph.tracks[t].trackLabel);
+                }
             }
             return ret;
         }
@@ -815,6 +823,62 @@ console.log(sz);
             path.exit().remove();
         }
 
+        function download() {
+
+
+                // grab SVG
+                var html = d3.select("svg")
+                    .attr("version", 1.1)
+                    .attr("xmlns", "http://www.w3.org/2000/svg")
+                    .node().parentNode.innerHTML;
+                //d3.select("#svgdataurl").html(img);
+                var DOMURL = self.URL || self.webkitURL || self;
+                var svg = new Blob([html], {type: 'image/svg+xml'});
+                var url = DOMURL.createObjectURL(svg);
+                // rasterize
+                var canvas = document.querySelector("canvas"),
+                    context = canvas.getContext("2d");
+                var image = new Image;
+                image.src = url;
+                image.onload = function() {
+                    context.drawImage(image, 0, 0);
+                    DOMURL.revokeObjectURL(url);
+                    //save and serve it as an actual filename
+                    binaryblob();
+                    //create a link that will force the user to download
+                    var a = document.createElement("a");
+                    a.download = "sample.png";
+                    a.href = canvas.toDataURL("image/png");
+                    var pngimg = '<img src="'+a.href+'">';
+                    d3.select("#pngdataurl").html(pngimg);
+                    a.click();
+                    a.remove();
+                    context.clearRect(0, 0, 1000, 1000);
+                    d3.select("#pngdataurl").html('');
+                    d3.select("#img").html('');
+                    //remove the link and the fake canvas
+
+            };
+
+            function binaryblob(){
+                var byteString = atob(document.querySelector("canvas").toDataURL().replace(/^data:image\/(png|jpg);base64,/, "")); //wtf is atob?? https://developer.mozilla.org/en-US/docs/Web/API/Window.atob
+                var ab = new ArrayBuffer(byteString.length);
+                var ia = new Uint8Array(ab);
+                for (var i = 0; i < byteString.length; i++) {
+                    ia[i] = byteString.charCodeAt(i);
+                }
+                var dataView = new DataView(ab);
+                var blob = new Blob([dataView], {type: "image/png"});
+                var DOMURL = self.URL || self.webkitURL || self;
+                var newurl = DOMURL.createObjectURL(blob);
+
+                var img = '<img src="'+newurl+'">';
+                d3.select("#img").html(img);
+            }
+        }
+
+
+
         create_bundle(json);
 
         return {
@@ -823,6 +887,7 @@ console.log(sz);
             getTreeNames: getTreeNames,
             getTrackNames: getTrackNames,
             toggleSummary: transitionToSummary,
+            download: download,
             graph: graph// for debugging purposes
         }
     }) ();
