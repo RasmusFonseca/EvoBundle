@@ -1,23 +1,4 @@
 
-function upload_button(el, callback) {
-    var uploader = document.getElementById(el);
-    var reader = new FileReader();
-
-    //reader.onload = function(e) {
-    //    var contents = e.target.result;
-    //    callback(contents);
-    //};
-
-    uploader.addEventListener("change", handleFiles, false);
-
-    function handleFiles() {
-        d3.select("#table").text("loading...");
-        var file = this.files[0];
-        //reader.readAsText(file);
-        loadExample(file);
-    }
-}
-
 
 function createFlareplot(width, json, divId){
     var w = width,
@@ -62,7 +43,7 @@ function createFlareplot(width, json, divId){
 
     return (function() {
 
-        function create_bundle(json) {
+        function create_bundle(json_text) {
 
             bundle = d3.layout.bundle();
 
@@ -98,6 +79,7 @@ function createFlareplot(width, json, divId){
                 transitionToSummary();
             });
 
+            json  = JSON.parse(json_text)
             graph = parse(json);
             nodes = cluster.nodes(graph.trees[selectedTree].tree[""]);
             links = graph.trees[selectedTree].frames;
@@ -892,3 +874,22 @@ console.log(sz);
         }
     }) ();
 }
+
+function upload_button(el, callback) {
+    var uploader = document.getElementById(el);
+    var reader = new FileReader();
+
+    reader.onload = function(e) {
+        var contents = e.target.result;
+        callback(contents);
+    };
+
+    uploader.addEventListener("change", handleFiles, false);
+
+    function handleFiles() {
+        d3.select("#table").text("loading...");
+        var file = this.files[0];
+        reader.readAsText(file);
+    }
+}
+
