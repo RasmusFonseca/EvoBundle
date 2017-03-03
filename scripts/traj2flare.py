@@ -40,7 +40,7 @@ print("Analyzing hbond network in %d frames .."%len(t))
 
 hbond_frames = defaultdict(set)
 
-for f,frame in enumerate(t[:20]):
+for f,frame in enumerate(t[:]):
   hbonds = md.baker_hubbard(frame, periodic=True)
   print("Frame %d .. %d hbonds"%(f,hbonds.shape[0]))
   for hbond in hbonds:
@@ -72,7 +72,8 @@ for resi1,resi2 in hbond_frames:
 
 #Collect entries for tracks (coloring of nodes)
 track_entries = []
-helix_colors = ["#1500D6","#003D97","#00E600","#00E600","#FEE200","#FF9000","#FF3B00","#FF0000"]
+#helix_colors = ["#1500D6","#003D97","#00E600","#00E600","#FEE200","#FF9000","#FF3B00","#FF0000"]
+helix_colors = ["#78C5D5","#459BA8","#79C268","#C5D747","#F5D63D","#F18C32","#E868A1","#BF63A6"]
 for tp in tree_paths:
   try:
     #res_name = tp[tp.rfind("x")+1:]
