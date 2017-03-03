@@ -129,7 +129,7 @@ The following outlines an API for developers wishing to incorporate a flareplot 
 <body>
     <div id="flare-container"></div>
     <script> 
-      d3.json("plotfile.json", function(data) {
+      d3.text("plotfile.json", function(data) {
         var plot = createFlareplot("flare-container", data);
       });
     </script>
