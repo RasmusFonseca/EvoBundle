@@ -61,6 +61,10 @@
                 stroke: #2ca02c;
             }
 
+            .trackSelector {
+                min-width: 220px;
+            }
+
             .link.target {
                 stroke: #2ca02c;
             }
@@ -71,6 +75,24 @@
 
             .node.source {
                 font-weight: bold;
+            }
+
+            .tree, .track {
+                margin: 0 5px 5px 5px;
+            }
+
+
+            .tree span {
+                float: right;
+            }
+
+            .track span {
+                float: right;
+            }
+
+            .treeRadio, .trackRadio {
+                margin-right: 10px;
+                float: left;
             }
 
 
@@ -144,8 +166,72 @@
                 }
 
                 function loadExample(fileName){
+
                     d3.text(fileName, function(json_text){
                         load_dataset(json_text);
+                        var radiodiv = d3.select('body')
+                                .append("div")
+                                .attr("class", "trackSelector")
+                                .style("position", "absolute")
+                                .style("top","0px")
+                                .style("right","0px")
+                                .style("padding","20px")
+                                .style("border-radius", "10px")
+                                .style("border","1px solid gray")
+
+                        radiodiv.append("span").text("Tree:");
+                        radiodiv.append('hr');
+
+                        var treeform = radiodiv
+                                .append("form")
+                                .attr("action","");
+
+                        var treeSpans = treeform.selectAll("div.tree")
+                                .data(chart.getTreeNames())
+                                .enter()
+                                .append("div")
+                                .attr("class","tree");
+
+                        treeSpans
+                                .append("input")
+                                .attr("type","radio")
+                                .attr("name","tree")
+                                .attr("class","treeRadio")
+                                .attr("value",function(d){return d;})
+                                .property("checked", function(d, i) { return i === 0;})
+                                .on("click",function(d,i){ chart.setTree(i); });
+
+                        treeSpans.append("span").text(function(d){ return " "+d; });
+                        treeSpans.append("br");
+
+                        radiodiv.append("span").text("Track:");
+                        radiodiv.append('hr');
+
+                        var trackform = radiodiv
+                                .append("form")
+                                .attr("action","");
+
+                        var trackSpans = trackform.selectAll("div.track")
+                                .data(chart.getTrackNames())
+                                .enter()
+                                .append("div")
+                                .attr("class","track");
+
+                        trackSpans
+                                .append("input")
+                                .attr("type","radio")
+                                .attr("class","trackRadio")
+                                .attr("name","track")
+                                .attr("value",function(d){return d;})
+                                .property("checked", function(d, i) { return i === 0;})
+                                .on("click",function(d,i){ chart.setTrack(i); });
+
+
+                        trackSpans.append("span").text(function(d){ return " "+d; });
+                        trackSpans.append("br");
+
+                        //check first track
+
                     });
                 }
                 upload_button("uploader", load_dataset);
